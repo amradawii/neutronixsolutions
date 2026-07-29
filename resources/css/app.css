@@ -1,0 +1,293 @@
+@import 'tailwindcss';
+
+/* ── Source scanning (Tailwind purge) ─────────────── */
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.svelte';
+@source '../js/**/*.js';
+
+/* ── Design Tokens ────────────────────────────────── */
+@theme {
+    /* Typography */
+    --font-sans:    'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Syne', ui-sans-serif, system-ui, sans-serif;
+    --font-arabic:  'Alexandria', ui-sans-serif, system-ui, sans-serif;
+
+    /* Monochrome + Electric Blue Palette */
+    --color-canvas:      #F4F6F9;  /* 60% — primary background, page fill  */
+    --color-surface:     #FFFFFF;  /* 60% — cards, structural sections      */
+    --color-ink:         #080C15;  /* 30% — text, borders, structural       */
+    --color-ember:       #1A3FA8;  /* 10% — CTAs, highlights, active states */
+    --color-ember-dark:  #122D7A;  /* Accent hover/pressed state            */
+    --color-ash:         #DDE1EA;  /* Borders, dividers, placeholders       */
+    --color-muted:       #5C6370;  /* Secondary text, captions, labels      */
+
+    /* Spacing */
+    --spacing-section: 6rem;       /* Vertical section rhythm               */
+    --nav-h: 72px;                 /* Fixed navbar height                   */
+
+    /* Border radius */
+    --radius-btn:  6px;
+    --radius-card: 4px;
+}
+
+/* Capability category coding — one hue per service pillar, so a wide offering
+   stays navigable across Home, Services, and Work.
+   Declared outside @theme on purpose: these are only ever referenced through
+   var() inside Svelte scoped styles, which Tailwind cannot see, so it would
+   tree-shake them out of the --color-* namespace. */
+:root {
+    --tone-cloud:       #0EA5E9;  /* Cloud & Infrastructure        */
+    --tone-engineering: #6366F1;  /* Custom Engineering & Startups */
+    --tone-data:        #10B981;  /* Data & Intelligent Automation */
+    --tone-growth:      #F59E0B;  /* Creative & Growth             */
+}
+
+/* ── Base Resets ──────────────────────────────────── */
+@layer base {
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    /* No `scroll-behavior: smooth` here: it fights GSAP ScrollTrigger's
+       pinning, which sets scroll position synchronously. */
+    html {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        overflow-x: clip;
+    }
+
+    body {
+        background-color: var(--color-canvas);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        line-height: 1.65;
+        overflow-x: clip;
+        max-width: 100%;
+    }
+
+    /* Arabic body: switch to Alexandria */
+    [dir="rtl"] body,
+    [dir="rtl"] p,
+    [dir="rtl"] span,
+    [dir="rtl"] a,
+    [dir="rtl"] li,
+    [dir="rtl"] button {
+        font-family: var(--font-arabic);
+    }
+
+    /* Headings — Syne for EN */
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-display);
+        color: var(--color-ink);
+        letter-spacing: -0.025em;
+        line-height: 1.1;
+    }
+
+    /* Arabic headings — Alexandria, no negative tracking */
+    [dir="rtl"] h1,
+    [dir="rtl"] h2,
+    [dir="rtl"] h3,
+    [dir="rtl"] h4 {
+        font-family: var(--font-arabic);
+        letter-spacing: 0;
+        line-height: 1.3;   /* Arabic needs slightly more line height */
+    }
+
+    /* Links */
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+        outline: 2px solid var(--color-ember);
+        outline-offset: 3px;
+    }
+
+    /* Remove default list styles */
+    ul, ol {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* Images / media / svg — never force page wider than viewport */
+    img, video, canvas, svg {
+        max-width: 100%;
+        display: block;
+    }
+}
+
+/* ── Component Classes ────────────────────────────── */
+@layer components {
+
+    /* Primary CTA Button — Ember fill */
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8125rem 2rem;
+        background-color: var(--color-ember);
+        color: #ffffff;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 2px solid var(--color-ember);
+        border-radius: var(--radius-btn);
+        cursor: pointer;
+        transition: background-color 150ms ease, border-color 150ms ease;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus-visible {
+        background-color: var(--color-ember-dark);
+        border-color: var(--color-ember-dark);
+        outline: none;
+    }
+
+    [dir="rtl"] .btn-primary {
+        font-family: var(--font-arabic);
+        letter-spacing: 0;
+    }
+
+    /* Outline Button — ink border */
+    .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.8125rem 2rem;
+        background-color: transparent;
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 0.8125rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        border: 2px solid var(--color-ink);
+        border-radius: var(--radius-btn);
+        cursor: pointer;
+        transition: background-color 150ms ease, color 150ms ease;
+    }
+
+    .btn-outline:hover,
+    .btn-outline:focus-visible {
+        background-color: var(--color-ink);
+        color: var(--color-canvas);
+        outline: none;
+    }
+
+    [dir="rtl"] .btn-outline {
+        font-family: var(--font-arabic);
+        letter-spacing: 0;
+    }
+
+    /* Section wrapper — consistent vertical rhythm */
+    .section {
+        padding-block: var(--spacing-section);
+    }
+
+    /* Container — max-width with side padding */
+    .wrap,
+    .container-site {
+        width: 100%;
+        max-width: 1280px;
+        margin-inline: auto;
+        padding-inline: 1.25rem;
+        box-sizing: border-box;
+    }
+
+    @media (min-width: 480px) {
+        .wrap,
+        .container-site {
+            padding-inline: 1.5rem;
+        }
+    }
+
+    @media (min-width: 1024px) {
+        .wrap,
+        .container-site {
+            padding-inline: 2.5rem;
+        }
+    }
+
+    /* 1px editorial border — replaces drop shadows */
+    .border-editorial {
+        border: 1px solid var(--color-ash);
+    }
+
+    /* Ember accent label — above section headings */
+    .label-accent {
+        display: inline-block;
+        color: var(--color-ember);
+        font-family: var(--font-sans);
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    [dir="rtl"] .label-accent {
+        font-family: var(--font-arabic);
+        letter-spacing: 0.04em;
+        font-size: 0.75rem;
+    }
+
+    /* Muted text utility */
+    .text-muted {
+        color: var(--color-muted);
+    }
+
+    /* Scroll-driven reveal (used with {@attach reveal()}) */
+    .reveal {
+        opacity: 0;
+        transform: translateY(1.15rem);
+        transition:
+            opacity 720ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms),
+            transform 720ms cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0ms);
+        will-change: opacity, transform;
+    }
+
+    .reveal.reveal-in {
+        opacity: 1;
+        transform: none;
+        will-change: auto;
+    }
+
+    /* Line mask for headings (used with {@attach maskedLines()}).
+       Each line is clipped so its inner span can slide up from below.
+       The padding/margin pair stops the clip from cutting descenders. */
+    .line {
+        display: block;
+        overflow: hidden;
+        padding-block: 0.14em;
+        margin-block: -0.14em;
+    }
+
+    .line > [data-line] {
+        display: block;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+        will-change: auto;
+    }
+
+    .ps-track,
+    .scroll-pip {
+        animation: none !important;
+    }
+}
