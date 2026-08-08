@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Inquiry;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -44,13 +46,17 @@ class HandleInertiaRequests extends Middleware
 
         return [
             ...parent::share($request),
-            'locale'    => app()->getLocale(),
+            'locale' => app()->getLocale(),
             'direction' => app()->getLocale() === 'ar' ? 'rtl' : 'ltr',
-            'flash'     => [
+            'adminUnreadInquiries' => fn () => $request->is('admin*') && Auth::guard('admin')->check()
+                ? Inquiry::unread()->count()
+                : 0,
+            'flash' => [
                 'success' => session('success'),
-                'error'   => session('error'),
+                'error' => session('error'),
+                'warning' => session('warning'),
+                'info' => session('info'),
             ],
         ];
     }
 }
-

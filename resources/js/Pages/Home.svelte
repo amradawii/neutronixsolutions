@@ -269,7 +269,7 @@
             <p class="hero-sub hero-enter he-3">{c.hero.sub}</p>
 
             <div class="hero-ctas hero-enter he-4">
-                <Link href={isAR ? '/ar/contact' : '/contact'} class="btn-primary">{c.hero.cta1}</Link>
+                <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.hero.cta1}</Link>
                 <Link href={isAR ? '/ar/services' : '/services'} class="btn-ghost">{c.hero.cta2} →</Link>
             </div>
         </div>
@@ -430,7 +430,7 @@
             <span class="label-accent cta-pill">{c.cta.label}</span>
             <h2 class="cta-h2" style="white-space:pre-line">{c.cta.title}</h2>
             <p  class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/contact' : '/contact'} class="btn-cta-dark">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-cta-dark">{c.cta.btn} →</Link>
         </div>
     </section>
 </PublicLayout>

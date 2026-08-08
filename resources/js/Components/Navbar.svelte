@@ -35,7 +35,6 @@
                 { label: 'Services', href: '/services' },
                 { label: 'Work',     href: '/work' },
                 { label: 'About',    href: '/about' },
-                { label: 'Contact',  href: '/contact' },
             ],
             langLabel: 'عربي',
             cta: 'Book a Consultation',
@@ -47,7 +46,6 @@
                 { label: 'الخدمات',  href: '/ar/services' },
                 { label: 'أعمالنا', href: '/ar/work' },
                 { label: 'من نحن',  href: '/ar/about' },
-                { label: 'اتصل بنا', href: '/ar/contact' },
             ],
             langLabel: 'EN',
             cta: 'احجز استشارة',
@@ -83,7 +81,7 @@
             <div class="nav-end">
                 <Link href={langHref} class="lang">{c.langLabel}</Link>
                 <div class="cta-d">
-                    <Link href={isAR ? '/ar/contact' : '/contact'} class="btn-primary-nav">{c.cta}</Link>
+                    <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary-nav">{c.cta}</Link>
                 </div>
                 <button
                     class="hbg"
@@ -114,7 +112,7 @@
                     {c.langLabel}
                 </Link>
                 <Link
-                    href={isAR ? '/ar/contact' : '/contact'}
+                    href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'}
                     class="btn-primary mob-cta"
                     onclick={() => mobileOpen = false}
                 >

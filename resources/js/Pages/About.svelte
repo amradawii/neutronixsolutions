@@ -200,7 +200,7 @@
                 {/each}
             </h2>
             <p class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/contact' : '/contact'} class="btn-primary">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.cta.btn} →</Link>
         </div>
     </section>
 </PublicLayout>

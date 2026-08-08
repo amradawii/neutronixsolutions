@@ -41,7 +41,7 @@
 
     let t = $derived(isAR ? ui.ar : ui.en)
     let workIndex = $derived(isAR ? '/ar/work' : '/work')
-    let contactHref = $derived(isAR ? '/ar/contact' : '/contact')
+    let contactHref = $derived(isAR ? '/ar/book-a-consultation' : '/book-a-consultation')
 </script>
 
 <svelte:head>

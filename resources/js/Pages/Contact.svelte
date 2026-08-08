@@ -1,14 +1,17 @@
 <script>
-    import { page } from '@inertiajs/svelte'
+    import { page, useForm } from '@inertiajs/svelte'
     import PublicLayout from '../Layouts/PublicLayout.svelte'
     import { reveal } from '../lib/reveal.js'
     import { maskedLines, staggerIn, toLines } from '../lib/motion.js'
+    import { toast } from '../lib/toast.js'
 
-    const EMAIL = 'hello@neutronixsolutions.com'
+    let { storeUrl = '/book-a-consultation' } = $props()
+
+    const EMAIL = 'info@neutronixsolutions.com'
 
     const content = {
         en: {
-            eyebrow: 'Contact',
+            eyebrow: 'Book a consultation',
             title: 'Start with\ntechnical challenge.',
             subtitle: 'Tell us what you need to build, improve, migrate, or automate. A senior engineer reads every message and responds within one business day.',
             required: 'Required',
@@ -16,6 +19,7 @@
                 legend: 'Project enquiry',
                 name: 'Your name',
                 email: 'Business email',
+                phone: 'Phone number',
                 company: 'Company or brand',
                 optional: 'Optional',
                 service: 'Primary capability needed',
@@ -58,7 +62,7 @@
             },
         },
         ar: {
-            eyebrow: 'تواصل معنا',
+            eyebrow: 'احجز استشارة',
             title: 'ابدأ بالتحدي التقني.',
             subtitle: 'أخبرنا بما تحتاج إلى بنائه أو تطويره أو ترحيله أو أتمتته. يقرأ مهندس أول كل رسالة ويرد خلال يوم عمل واحد.',
             required: 'مطلوب',
@@ -66,6 +70,7 @@
                 legend: 'طلب مشروع',
                 name: 'الاسم',
                 email: 'البريد الإلكتروني للعمل',
+                phone: 'رقم الهاتف',
                 company: 'الشركة أو العلامة التجارية',
                 optional: 'اختياري',
                 service: 'القدرة الأساسية المطلوبة',
@@ -113,40 +118,35 @@
     let isAR   = $derived(locale === 'ar')
     let c      = $derived(isAR ? content.ar : content.en)
 
-    let form = $state({ name: '', email: '', company: '', service: 'software', message: '' })
-    let isSubmitting = $state(false)
-    /** @type {'success'|'error'|null} */
-    let submitStatus = $state(null)
+    let form = useForm('post', () => storeUrl, {
+        name: '',
+        email: '',
+        phone: '',
+        company: '',
+        service: 'software',
+        message: '',
+        website: '',
+    })
+    form.setValidationTimeout(450)
 
-    /**
-     * Front-end only for now — the backend will replace the timeout with a real
-     * POST once the layout and content flow are locked.
-     * @param {SubmitEvent} event
-     */
+    function validate(field) {
+        form.touch(field).validate(field)
+    }
+
     function handleSubmit(event) {
         event.preventDefault()
-        isSubmitting = true
-        submitStatus = null
-
-        setTimeout(() => {
-            isSubmitting = false
-
-            if (!form.name || !form.email || !form.message) {
-                submitStatus = 'error'
-                return
-            }
-
-            submitStatus = 'success'
-            form.name = ''
-            form.email = ''
-            form.company = ''
-            form.message = ''
-        }, 900)
+        form.post(storeUrl, {
+            preserveScroll: true,
+            onSuccess: (responsePage) => {
+                if (!responsePage.props.flash?.error) form.reset()
+            },
+            onError: () => toast.error(c.feedback.error),
+        })
     }
 </script>
 
 <svelte:head>
-    <title>{isAR ? 'تواصل معنا' : 'Contact'} | Neutronix</title>
+    <title>{isAR ? 'احجز استشارة' : 'Book a Consultation'} | Neutronix</title>
     <meta name="description" content={isAR ? 'ناقش مشروعك السحابي أو البرمجي أو مشروع الأتمتة مع فريق نيوترونيكس في قطر.' : 'Discuss your cloud, software, automation, or data project with the Neutronix team in Qatar.'} />
 </svelte:head>
 
@@ -170,16 +170,8 @@
     <section class="contact">
         <div class="wrap contact-grid">
             <div class="form-card" {@attach reveal()}>
-                <div class="status-slot" aria-live="polite">
-                    {#if submitStatus === 'success'}
-                        <p class="status status-success">{c.feedback.success}</p>
-                    {:else if submitStatus === 'error'}
-                        <p class="status status-error">{c.feedback.error}</p>
-                    {/if}
-                </div>
-
-                <form onsubmit={handleSubmit}>
-                    <fieldset class="fieldset" disabled={isSubmitting}>
+                <form onsubmit={handleSubmit} novalidate>
+                    <fieldset class="fieldset" disabled={form.processing}>
                         <legend class="visually-hidden">{c.form.legend}</legend>
 
                         <div class="row">
@@ -188,44 +180,83 @@
                                     {c.form.name}<span class="req" title={c.required}>*</span>
                                 </label>
                                 <input
-                                    class="f-control" type="text" id="name" name="name"
-                                    autocomplete="name" required
+                                    class="f-control" class:has-error={form.errors.name}
+                                    type="text" id="name" name="name" autocomplete="name"
+                                    required minlength="2" maxlength="100"
+                                    pattern="^[\p{L}\s]+$"
                                     bind:value={form.name}
-                                    placeholder={isAR ? 'مثال: أحمد العتيبي' : 'e.g. John Doe'}
+                                    onblur={() => validate('name')}
+                                    aria-invalid={Boolean(form.errors.name)}
+                                    aria-describedby={form.errors.name ? 'name-error' : undefined}
+                                    placeholder={isAR ? 'يرجى كتابة اسمك' : 'Please write your name'}
                                 />
+                                {#if form.errors.name}<p class="field-error" id="name-error">{form.errors.name}</p>{/if}
                             </div>
                             <div class="field">
                                 <label class="f-label" for="email">
                                     {c.form.email}<span class="req" title={c.required}>*</span>
                                 </label>
                                 <input
-                                    class="f-control" type="email" id="email" name="email"
-                                    autocomplete="email" required
+                                    class="f-control" class:has-error={form.errors.email}
+                                    type="email" id="email" name="email" autocomplete="email"
+                                    required maxlength="255"
                                     bind:value={form.email}
+                                    onblur={() => validate('email')}
+                                    aria-invalid={Boolean(form.errors.email)}
+                                    aria-describedby={form.errors.email ? 'email-error' : undefined}
                                     placeholder="name@company.com"
                                 />
+                                {#if form.errors.email}<p class="field-error" id="email-error">{form.errors.email}</p>{/if}
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="field">
+                                <label class="f-label" for="phone">
+                                    {c.form.phone}<span class="f-optional">{c.form.optional}</span>
+                                </label>
+                                <input
+                                    class="f-control" class:has-error={form.errors.phone}
+                                    type="tel" id="phone" name="phone" autocomplete="tel" maxlength="20"
+                                    pattern="^\+?[0-9]+$"
+                                    bind:value={form.phone}
+                                    onblur={() => validate('phone')}
+                                    aria-invalid={Boolean(form.errors.phone)}
+                                    aria-describedby={form.errors.phone ? 'phone-error' : undefined}
+                                    placeholder="+97400000000"
+                                />
+                                {#if form.errors.phone}<p class="field-error" id="phone-error">{form.errors.phone}</p>{/if}
+                            </div>
+                            <div class="field">
                                 <label class="f-label" for="company">
                                     {c.form.company}<span class="f-optional">{c.form.optional}</span>
                                 </label>
                                 <input
-                                    class="f-control" type="text" id="company" name="company"
-                                    autocomplete="organization"
+                                    class="f-control" class:has-error={form.errors.company}
+                                    type="text" id="company" name="company" autocomplete="organization" maxlength="120"
                                     bind:value={form.company}
+                                    onblur={() => validate('company')}
+                                    aria-invalid={Boolean(form.errors.company)}
+                                    aria-describedby={form.errors.company ? 'company-error' : undefined}
                                 />
+                                {#if form.errors.company}<p class="field-error" id="company-error">{form.errors.company}</p>{/if}
                             </div>
-                            <div class="field">
-                                <label class="f-label" for="service">{c.form.service}</label>
-                                <select class="f-control f-select" id="service" name="service" bind:value={form.service}>
-                                    {#each c.form.services as option (option.id)}
-                                        <option value={option.id}>{option.label}</option>
-                                    {/each}
-                                </select>
-                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="f-label" for="service">{c.form.service}</label>
+                            <select
+                                class="f-control f-select" class:has-error={form.errors.service}
+                                id="service" name="service" required bind:value={form.service}
+                                onchange={() => validate('service')}
+                                aria-invalid={Boolean(form.errors.service)}
+                                aria-describedby={form.errors.service ? 'service-error' : undefined}
+                            >
+                                {#each c.form.services as option (option.id)}
+                                    <option value={option.id}>{option.label}</option>
+                                {/each}
+                            </select>
+                            {#if form.errors.service}<p class="field-error" id="service-error">{form.errors.service}</p>{/if}
                         </div>
 
                         <div class="field">
@@ -233,18 +264,26 @@
                                 {c.form.message}<span class="req" title={c.required}>*</span>
                             </label>
                             <textarea
-                                class="f-control f-textarea" id="message" name="message"
-                                rows="6" required
-                                aria-describedby="message-hint"
+                                class="f-control f-textarea" class:has-error={form.errors.message}
+                                id="message" name="message" rows="6" required minlength="20" maxlength="3000"
+                                aria-describedby={form.errors.message ? 'message-error message-hint' : 'message-hint'}
+                                aria-invalid={Boolean(form.errors.message)}
                                 bind:value={form.message}
+                                onblur={() => validate('message')}
                                 placeholder={isAR ? 'صف النظام الحالي والعائق والجدول الزمني المستهدف…' : 'Describe the current system, the bottleneck, and your target timeline…'}
                             ></textarea>
+                            {#if form.errors.message}<p class="field-error" id="message-error">{form.errors.message}</p>{/if}
                             <p class="f-hint" id="message-hint">{c.form.messageHint}</p>
                         </div>
 
+                        <div class="website-field" aria-hidden="true">
+                            <label for="website">Website</label>
+                            <input id="website" name="website" type="text" tabindex="-1" autocomplete="off" bind:value={form.website} />
+                        </div>
+
                         <div class="submit-row">
-                            <button class="btn-primary submit" type="submit" aria-busy={isSubmitting}>
-                                {isSubmitting ? c.form.submitting : c.form.submit}
+                            <button class="btn-primary submit" type="submit" aria-busy={form.processing} disabled={form.processing}>
+                                {form.processing ? c.form.submitting : c.form.submit}
                             </button>
                             <p class="privacy">{c.form.privacy}</p>
                         </div>
@@ -356,17 +395,6 @@
 @media (min-width: 768px) {
     .form-card { padding: 3rem; }
 }
-.status {
-    margin: 0 0 1.75rem;
-    padding: 0.9375rem 1.125rem;
-    border-radius: 10px;
-    font-size: 0.9375rem;
-    line-height: 1.6;
-    border: 1px solid transparent;
-}
-:global([dir="rtl"]) .status { font-family: var(--font-arabic); }
-.status-success { background: #ECFDF5; border-color: #A7F3D0; color: #065F46; }
-.status-error   { background: #FEF2F2; border-color: #FECACA; color: #991B1B; }
 .fieldset {
     display: flex;
     flex-direction: column;
@@ -439,6 +467,26 @@
     background: var(--color-surface);
     border-color: var(--color-ember);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-ember) 16%, transparent);
+}
+.f-control.has-error {
+    border-color: #DC2626;
+}
+.f-control.has-error:focus {
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+.field-error {
+    margin: 0;
+    color: #B91C1C;
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+:global([dir="rtl"]) .field-error { font-family: var(--font-arabic); }
+.website-field {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
 }
 .f-select {
     appearance: none;
