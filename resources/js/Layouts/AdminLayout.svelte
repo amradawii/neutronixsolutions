@@ -1,5 +1,5 @@
 <script>
-    import { router, Link } from '@inertiajs/svelte'
+    import { page, router, Link } from '@inertiajs/svelte'
 
     let { children, admin = {}, title = 'Overview', section = 'overview' } = $props()
 
@@ -7,6 +7,7 @@
     let sidebarCollapsed = $state(false)
     let sidebarOpen      = $state(false)
     let profileOpen      = $state(false)
+    let unreadInquiryCount = $derived(page.props.adminUnreadInquiries || 0)
 
     // Load initial collapse state on mount
     $effect(() => {
@@ -65,8 +66,8 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 7.5 6.2 4.65a2.17 2.17 0 0 0 2.6 0L19.5 7.5" />
                 </svg>
                 <span class="sb-text">Inquiries</span>
-                {#if !sidebarCollapsed}
-                    <span class="nav-count">12</span>
+                {#if !sidebarCollapsed && unreadInquiryCount > 0}
+                    <span class="nav-count">{unreadInquiryCount}</span>
                 {/if}
             </Link>
 

@@ -1,73 +1,96 @@
 <script>
+    import { router } from '@inertiajs/svelte'
+    import { onDestroy } from 'svelte'
     import AdminLayout from '../../Layouts/AdminLayout.svelte'
+    import { toast } from '../../lib/toast.js'
 
-    let { admin = {}, inquiries = [] } = $props()
+    let { admin = {}, inquiries = {}, filters = {}, services = [], summary = {} } = $props()
 
-    let statusOverrides = $state({})
-    let query = $state('')
-    let statusFilter = $state('all')
-    let serviceFilter = $state('all')
-    let pageNumber = $state(1)
-    let selectedInquiryId = $state(null)
-    const perPage = 6
-
-    let items = $derived(inquiries.map((item) => ({
-        ...item,
-        status: statusOverrides[item.id] ?? item.status,
-    })))
-    let services = $derived([...new Set(items.map((item) => item.service))])
-    let filteredInquiries = $derived(items.filter((item) => {
-        const needle = query.trim().toLowerCase()
-        const matchesQuery = !needle || [item.name, item.email, item.company, item.service, item.message]
-            .some((value) => value.toLowerCase().includes(needle))
-        const matchesStatus = statusFilter === 'all' || item.status === statusFilter
-        const matchesService = serviceFilter === 'all' || item.service === serviceFilter
-
-        return matchesQuery && matchesStatus && matchesService
-    }))
-    let totalPages = $derived(Math.max(1, Math.ceil(filteredInquiries.length / perPage)))
-    let visibleInquiries = $derived(filteredInquiries.slice((pageNumber - 1) * perPage, pageNumber * perPage))
-    let pages = $derived(Array.from({ length: totalPages }, (_, index) => index + 1))
-    let selectedInquiry = $derived(items.find((item) => item.id === selectedInquiryId) || null)
-    let unreadCount = $derived(items.filter((item) => item.status === 'unread').length)
-    let repliedCount = $derived(items.filter((item) => item.status === 'replied').length)
+    let search = $state('')
+    let selectedInquiry = $state(null)
+    let isUpdatingStatus = $state(false)
+    let searchTimer
 
     $effect(() => {
-        if (pageNumber > totalPages) pageNumber = totalPages
+        search = filters.search || ''
     })
 
-    function applyQuery(event) {
-        query = event.currentTarget.value
-        pageNumber = 1
+    onDestroy(() => clearTimeout(searchTimer))
+
+    function loadInquiries(nextFilters = {}) {
+        router.get('/admin/inquiries', {
+            search: (nextFilters.search ?? search) || undefined,
+            status: (nextFilters.status ?? filters.status) || undefined,
+            service: (nextFilters.service ?? filters.service) || undefined,
+        }, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        })
+    }
+
+    function applySearch(event) {
+        search = event.currentTarget.value
+        clearTimeout(searchTimer)
+        searchTimer = setTimeout(() => loadInquiries({ search }), 350)
     }
 
     function applyStatus(event) {
-        statusFilter = event.currentTarget.value
-        pageNumber = 1
+        loadInquiries({ status: event.currentTarget.value || undefined })
     }
 
     function applyService(event) {
-        serviceFilter = event.currentTarget.value
-        pageNumber = 1
+        loadInquiries({ service: event.currentTarget.value || undefined })
     }
 
     function clearFilters() {
-        query = ''
-        statusFilter = 'all'
-        serviceFilter = 'all'
-        pageNumber = 1
+        search = ''
+        router.get('/admin/inquiries', {}, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true,
+        })
     }
 
-    function openInquiry(id) {
-        selectedInquiryId = id
+    function openInquiry(inquiry) {
+        selectedInquiry = { ...inquiry }
+        if (inquiry.status !== 'unread') return
+
+        selectedInquiry.status = 'read'
+        router.patch(`/admin/inquiries/${inquiry.id}/status`, { status: 'read' }, {
+            preserveState: true,
+            preserveScroll: true,
+            onError: () => {
+                selectedInquiry.status = 'unread'
+                toast.error('The inquiry could not be marked as read.')
+            },
+        })
     }
 
     function closeInquiry() {
-        selectedInquiryId = null
+        selectedInquiry = null
     }
 
-    function setStatus(id, status) {
-        statusOverrides[id] = status
+    function markReplied() {
+        if (!selectedInquiry || isUpdatingStatus) return
+
+        isUpdatingStatus = true
+        router.patch(`/admin/inquiries/${selectedInquiry.id}/status`, { status: 'replied' }, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                selectedInquiry.status = 'replied'
+            },
+            onError: () => toast.error('The inquiry status could not be updated.'),
+            onFinish: () => {
+                isUpdatingStatus = false
+            },
+        })
+    }
+
+    function visitPage(url) {
+        if (!url) return
+        router.visit(url, { preserveState: true, preserveScroll: true })
     }
 
     function handleWindowKeydown(event) {
@@ -93,9 +116,9 @@
             <p>Review new opportunities and keep every conversation moving.</p>
         </div>
         <div class="inquiry-summary" aria-label="Inquiry summary">
-            <div><strong>{items.length}</strong><span>Total</span></div>
-            <div><strong>{unreadCount}</strong><span>Unread</span></div>
-            <div><strong>{repliedCount}</strong><span>Replied</span></div>
+            <div><strong>{summary.total || 0}</strong><span>Total</span></div>
+            <div><strong>{summary.unread || 0}</strong><span>Unread</span></div>
+            <div><strong>{summary.replied || 0}</strong><span>Replied</span></div>
         </div>
     </div>
 
@@ -104,14 +127,14 @@
             <label class="search-field">
                 <span class="visually-hidden">Search inquiries</span>
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5" /><path stroke-linecap="round" d="m16 16 4 4" /></svg>
-                <input type="search" value={query} oninput={applyQuery} placeholder="Search client, company, service..." />
+                <input type="search" value={search} oninput={applySearch} placeholder="Search client, company, service..." />
             </label>
 
             <div class="filters">
                 <label>
                     <span class="visually-hidden">Filter by status</span>
-                    <select value={statusFilter} onchange={applyStatus}>
-                        <option value="all">All statuses</option>
+                    <select value={filters.status || ''} onchange={applyStatus}>
+                        <option value="">All statuses</option>
                         <option value="unread">Unread</option>
                         <option value="read">Read</option>
                         <option value="replied">Replied</option>
@@ -119,10 +142,10 @@
                 </label>
                 <label>
                     <span class="visually-hidden">Filter by service</span>
-                    <select value={serviceFilter} onchange={applyService}>
-                        <option value="all">All services</option>
-                        {#each services as service (service)}
-                            <option value={service}>{service}</option>
+                    <select value={filters.service || ''} onchange={applyService}>
+                        <option value="">All services</option>
+                        {#each services as service (service.value)}
+                            <option value={service.value}>{service.label}</option>
                         {/each}
                     </select>
                 </label>
@@ -130,8 +153,8 @@
         </div>
 
         <div class="results-bar">
-            <span>{filteredInquiries.length} {filteredInquiries.length === 1 ? 'inquiry' : 'inquiries'}</span>
-            {#if query || statusFilter !== 'all' || serviceFilter !== 'all'}
+            <span>{inquiries.total || 0} {inquiries.total === 1 ? 'inquiry' : 'inquiries'}</span>
+            {#if filters.search || filters.status || filters.service}
                 <button type="button" onclick={clearFilters}>Clear filters</button>
             {/if}
         </div>
@@ -149,7 +172,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each visibleInquiries as inquiry (inquiry.id)}
+                    {#each inquiries.data || [] as inquiry (inquiry.id)}
                         <tr class:unread-row={inquiry.status === 'unread'}>
                             <td>
                                 <div class="client-cell">
@@ -160,14 +183,14 @@
                                     </div>
                                 </div>
                             </td>
-                            <td><span class="service-pill">{inquiry.service}</span></td>
+                            <td><span class="service-pill">{inquiry.service_label}</span></td>
                             <td><p class="message-preview">{inquiry.message}</p></td>
                             <td><span class="received-at">{inquiry.created_at}</span></td>
                             <td>
                                 <span class="status-badge {inquiry.status}"><span></span>{inquiry.status}</span>
                             </td>
                             <td>
-                                <button type="button" class="view-button" onclick={() => openInquiry(inquiry.id)} aria-label={`View inquiry from ${inquiry.name}`}>
+                                <button type="button" class="view-button" onclick={() => openInquiry(inquiry)} aria-label={`View inquiry from ${inquiry.name}`}>
                                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m7.5 4.5 5.5 5.5-5.5 5.5" /></svg>
                                 </button>
                             </td>
@@ -190,17 +213,17 @@
             </table>
         </div>
 
-        {#if filteredInquiries.length > perPage}
+        {#if inquiries.last_page > 1}
             <div class="pagination">
-                <span>Page {pageNumber} of {totalPages}</span>
+                <span>Showing {inquiries.from}–{inquiries.to} of {inquiries.total}</span>
                 <div>
-                    <button type="button" onclick={() => pageNumber -= 1} disabled={pageNumber === 1} aria-label="Previous page">
+                    <button type="button" onclick={() => visitPage(inquiries.prev_page_url)} disabled={!inquiries.prev_page_url} aria-label="Previous page">
                         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m12.5 4.5-5.5 5.5 5.5 5.5" /></svg>
                     </button>
-                    {#each pages as pageItem (pageItem)}
-                        <button type="button" class:active={pageNumber === pageItem} aria-current={pageNumber === pageItem ? 'page' : undefined} onclick={() => pageNumber = pageItem}>{pageItem}</button>
+                    {#each (inquiries.links || []).slice(1, -1) as link (link.label)}
+                        <button type="button" class:active={link.active} aria-current={link.active ? 'page' : undefined} onclick={() => visitPage(link.url)}>{link.label}</button>
                     {/each}
-                    <button type="button" onclick={() => pageNumber += 1} disabled={pageNumber === totalPages} aria-label="Next page">
+                    <button type="button" onclick={() => visitPage(inquiries.next_page_url)} disabled={!inquiries.next_page_url} aria-label="Next page">
                         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m7.5 4.5 5.5 5.5-5.5 5.5" /></svg>
                     </button>
                 </div>
@@ -238,11 +261,17 @@
                     </div>
                     <div>
                         <dt>Phone</dt>
-                        <dd><a href={`tel:${selectedInquiry.phone.replace(/\s/g, '')}`}>{selectedInquiry.phone}</a></dd>
+                        <dd>
+                            {#if selectedInquiry.phone}
+                                <a href={`tel:${selectedInquiry.phone.replace(/\s/g, '')}`}>{selectedInquiry.phone}</a>
+                            {:else}
+                                Not provided
+                            {/if}
+                        </dd>
                     </div>
                     <div>
                         <dt>Requested service</dt>
-                        <dd>{selectedInquiry.service}</dd>
+                        <dd>{selectedInquiry.service_label}</dd>
                     </div>
                     <div>
                         <dt>Submitted</dt>
@@ -261,10 +290,10 @@
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6.75A2.25 2.25 0 0 1 6.25 4.5h11.5A2.25 2.25 0 0 1 20 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25H6.25A2.25 2.25 0 0 1 4 17.25V6.75Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m4.75 7.25 5.98 4.48a2.12 2.12 0 0 0 2.54 0l5.98-4.48" /></svg>
                     Reply by email
                 </a>
-                {#if selectedInquiry.status === 'unread'}
-                    <button type="button" class="secondary-button" onclick={() => setStatus(selectedInquiry.id, 'read')}>Mark as read</button>
-                {:else if selectedInquiry.status !== 'replied'}
-                    <button type="button" class="secondary-button" onclick={() => setStatus(selectedInquiry.id, 'replied')}>Mark replied</button>
+                {#if selectedInquiry.status !== 'replied'}
+                    <button type="button" class="secondary-button" onclick={markReplied} disabled={isUpdatingStatus}>
+                        {isUpdatingStatus ? 'Updating...' : 'Mark replied'}
+                    </button>
                 {/if}
             </div>
         </div>

@@ -26,7 +26,7 @@ class WorkController extends Controller
     public function show(string $slug): Response
     {
         if (! in_array($slug, self::PROJECT_IDS, true)) {
-            throw new NotFoundHttpException();
+            throw new NotFoundHttpException;
         }
 
         return Inertia::render('WorkShow', [

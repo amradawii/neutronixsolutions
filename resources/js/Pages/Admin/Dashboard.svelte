@@ -35,18 +35,18 @@
 
         <article class="stat-card">
             <div class="stat-copy">
-                <span class="sc-label">Active Campaigns</span>
-                <span class="sc-value">{stats.active_campaigns || 0}</span>
+                <span class="sc-label">Replied</span>
+                <span class="sc-value">{stats.replied_inquiries || 0}</span>
             </div>
-            <span class="sc-sub">In progress</span>
+            <span class="sc-sub sc-sub-positive">Handled</span>
         </article>
 
         <article class="stat-card">
             <div class="stat-copy">
-                <span class="sc-label">Pipeline Value</span>
-                <span class="sc-value sc-value-currency">{stats.pipeline_value || '$0'}</span>
+                <span class="sc-label">This Month</span>
+                <span class="sc-value">{stats.monthly_inquiries || 0}</span>
             </div>
-            <span class="sc-sub">Estimated</span>
+            <span class="sc-sub">Received</span>
         </article>
     </div>
 
@@ -171,7 +171,6 @@
     line-height: 1.15;
     margin-top: 0.15rem;
 }
-.sc-value-currency { font-size: 1.375rem; }
 .sc-sub {
     width: max-content;
     font-size: 0.6875rem;
@@ -182,6 +181,7 @@
     padding: 0.3rem 0.55rem;
 }
 .sc-sub-attention { color: #9A3412; background: #FFF7ED; }
+.sc-sub-positive { color: #047857; background: #ECFDF5; }
 
 /* Inquiries Table Section */
 .inquiries-section {

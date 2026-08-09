@@ -49,8 +49,6 @@
         password_confirmation: clientPasswordErrors.password_confirmation || (serverPasswordErrors.password_confirmation ? (Array.isArray(serverPasswordErrors.password_confirmation) ? serverPasswordErrors.password_confirmation[0] : serverPasswordErrors.password_confirmation) : '')
     })
 
-    // Flash message reactive helper
-    let flashSuccess = $derived(page.props.flash?.success || '')
     let activeTab = $state('profile')
 
     $effect(() => {
@@ -183,14 +181,6 @@
 </svelte:head>
 
 <AdminLayout {admin} title="My Profile" section="profile">
-    <!-- ── SUCCESS FLASH FEEDBACK ── -->
-    {#if flashSuccess}
-        <div class="success-banner border-editorial" role="alert">
-            <span class="sb-icon">✓</span>
-            <p>{flashSuccess}</p>
-        </div>
-    {/if}
-
     <div class="profile-shell">
         <div class="profile-tabs" role="tablist" aria-label="Profile settings">
             <button
@@ -374,24 +364,6 @@
 </AdminLayout>
 
 <style>
-/* Flash Banner */
-.success-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    max-width: 860px;
-    padding: 0.875rem 1rem;
-    background-color: #ECFDF5;
-    border-color: #A7F3D0;
-    color: #065F46;
-    font-size: 0.8125rem;
-    border-radius: 14px;
-    margin-bottom: 1rem;
-    line-height: 1.4;
-}
-.success-banner p { margin: 0; }
-.sb-icon { font-weight: 800; color: #047857; }
-
 /* Form Layout Grid */
 .profile-shell {
     max-width: 860px;

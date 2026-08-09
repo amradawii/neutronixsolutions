@@ -27,7 +27,7 @@ class ProfileController extends Controller
                 'username' => $admin->username,
                 'email' => $admin->email,
                 'photo_url' => $admin->photo_url,
-            ]
+            ],
         ]);
     }
 
@@ -49,7 +49,7 @@ class ProfileController extends Controller
             }
 
             // Save the uploaded avatar image file
-            $path = $request->file('photo')->store('admins/' . $admin->id, 'public');
+            $path = $request->file('photo')->store('admins/'.$admin->id, 'public');
             $admin->photo = $path;
         }
 

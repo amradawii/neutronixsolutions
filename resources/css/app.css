@@ -25,7 +25,7 @@
 
     /* Spacing */
     --spacing-section: 6rem;       /* Vertical section rhythm               */
-    --nav-h: 72px;                 /* Fixed navbar height                   */
+    --nav-h: 72px;                /* Fixed navbar height                    */
 
     /* Border radius */
     --radius-btn:  6px;

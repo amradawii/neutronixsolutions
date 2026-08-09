@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\InquiryController;
 use App\Http\Controllers\Admin\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +17,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Authenticated Admin Routes
     Route::middleware('auth.admin')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/inquiries', [DashboardController::class, 'inquiries'])->name('inquiries');
+        Route::get('/inquiries', [InquiryController::class, 'index'])->name('inquiries');
+        Route::patch('/inquiries/{inquiry}/status', [InquiryController::class, 'updateStatus'])->name('inquiries.status');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
         // Profile Management

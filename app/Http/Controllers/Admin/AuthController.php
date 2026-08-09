@@ -34,12 +34,12 @@ class AuthController extends Controller
 
         if (Auth::guard('admin')->attempt([
             'username' => $credentials['username'],
-            'password' => $credentials['password']
+            'password' => $credentials['password'],
         ], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             return redirect()->intended(route('admin.dashboard'))
-                ->with('success', 'Welcome back, ' . Auth::guard('admin')->user()->name);
+                ->with('success', 'Welcome back, '.Auth::guard('admin')->user()->name);
         }
 
         throw ValidationException::withMessages([
