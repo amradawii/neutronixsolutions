@@ -3,6 +3,7 @@
     import PublicLayout from '../Layouts/PublicLayout.svelte'
     import HeroField from '../Components/HeroField.svelte'
     import { reveal } from '../lib/reveal.js'
+    import { getServices } from '../lib/services.js'
     import { onMount } from 'svelte'
     import { gsap } from 'gsap'
     import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -22,28 +23,17 @@
             },
             proofLabel: 'Measured outcomes from delivered engagements',
             proofStrip: [
-                { id: 'cost',   v: '40%',   l: 'infrastructure cost removed',      client: 'Novus Living' },
-                { id: 'uptime', v: '99.9%', l: 'uptime SLA sustained',             client: 'Novus Living' },
-                { id: 'deploy', v: '60%',   l: 'faster deployments',               client: 'Aether Skincare' },
-                { id: 'flows',  v: '12',    l: 'workflows automated end-to-end',   client: 'Solara Energy' },
-                { id: 'setup',  v: '34%',   l: 'shorter client setup',             client: 'Zeta Warehouses' },
-                { id: 'report', v: '8 hrs', l: 'manual reporting removed weekly',  client: 'Apex Capital' },
+                { id: 'cost',   v: '40%',   l: 'infrastructure cost removed' },
+                { id: 'uptime', v: '99.9%', l: 'uptime SLA sustained' },
+                { id: 'deploy', v: '60%',   l: 'faster deployments' },
+                { id: 'flows',  v: '12',    l: 'workflows automated end-to-end' },
+                { id: 'setup',  v: '34%',   l: 'shorter client setup' },
+                { id: 'report', v: '8 hrs', l: 'manual reporting removed weekly' },
             ],
             services: {
                 label: 'Core Capabilities',
                 title: 'Complex technology.\nClear outcomes.',
-                sub: 'Nine focused services. Scroll to explore — or view all capabilities for the full picture.',
-                items: [
-                    { id:'azure', kicker:'Cloud & Infrastructure', title:'Azure Cloud Architecture & Migration', desc:'Secure, scalable Azure environments planned around your workloads, governance requirements, and operating model.', offerings:['Cloud Readiness Assessment','Azure Landing Zones','Workload Migration'], img:'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=70&auto=format&fit=crop', color:'#0EA5E9' },
-                    { id:'devops', kicker:'Cloud & Infrastructure', title:'DevOps, Deployment & Reliability', desc:'Production pipelines and operational foundations that make releases predictable, observable, and recoverable.', offerings:['CI/CD Pipelines','Containers & Microservices','Monitoring & Alerting'], img:'https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=600&q=70&auto=format&fit=crop', color:'#0EA5E9' },
-                    { id:'platforms', kicker:'Custom Engineering', title:'Full-Stack Platforms & Custom Systems', desc:'Business-critical web platforms, portals, internal tools, and APIs engineered around real workflows.', offerings:['Custom Web Platforms','Enterprise Portals','API Architecture'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=70&auto=format&fit=crop', color:'#6366F1' },
-                    { id:'mvp', kicker:'Custom Engineering', title:'MVP & Product Engineering', desc:'A disciplined path from product idea to a validated, production-ready release for founders and innovation teams.', offerings:['Product Discovery','UX/UI Engineering','MVP Development'], img:'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&q=70&auto=format&fit=crop', color:'#6366F1' },
-                    { id:'automation', kicker:'Data & Automation', title:'Workflow Automation & Integration', desc:'Connected workflows that remove repetitive work and move information reliably between your teams, tools, and customers.', offerings:['n8n Orchestration','System Connectors','API & Webhook Integration'], img:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'data', kicker:'Data & Automation', title:'Data Analytics & Business Intelligence', desc:'Reliable data pipelines and decision-ready dashboards that turn fragmented operational data into a shared source of truth.', offerings:['Data Pipelines','Executive Dashboards','Reporting Automation'], img:'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'ai', kicker:'Data & Automation', title:'Applied AI & Retrieval Systems', desc:'Assistants and document intelligence grounded in your own sources — cited answers in Arabic and English, inside your own Azure tenancy.', offerings:['Bilingual RAG','Document Intelligence','Model Adaptation'], img:'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'optimization', kicker:'Data & Automation', title:'Maintenance & Performance Optimization', desc:'Targeted modernization for systems held back by slow APIs, fragile code, database bottlenecks, or rising infrastructure cost.', offerings:['Legacy Refactoring','API Optimization','Database Tuning'], img:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=70&auto=format&fit=crop', color:'#14B8A6' },
-                    { id:'creative', kicker:'Creative & Growth', title:'Product Design, Brand & Digital Growth', desc:'Complementary product experience, identity, and growth support that helps technically strong solutions launch with equal clarity.', offerings:['UX/UI & Product Design','Brand Identity','Launch Systems'], img:'https://images.unsplash.com/photo-1558655146-d09347e92766?w=600&q=70&auto=format&fit=crop', color:'#F59E0B' },
-                ],
+                sub: (n) => `${n} focused services. Scroll to explore — or view all capabilities for the full picture.`,
             },
             platform: {
                 label: 'Built on',
@@ -88,28 +78,17 @@
             },
             proofLabel: 'نتائج مقاسة من مشاريع منفذة',
             proofStrip: [
-                { id: 'cost',   v: '40%',      l: 'خفض تكلفة البنية التحتية',       client: 'نوفوس ليفينج' },
-                { id: 'uptime', v: '99.9%',    l: 'استمرارية تشغيل مضمونة',         client: 'نوفوس ليفينج' },
-                { id: 'deploy', v: '60%',      l: 'نشر أسرع',                       client: 'إيثر للعناية بالبشرة' },
-                { id: 'flows',  v: '12',       l: 'سير عمل مؤتمت بالكامل',          client: 'سولارا للطاقة' },
-                { id: 'setup',  v: '34%',      l: 'وقت تهيئة أقصر',                 client: 'مستودعات زيتا' },
-                { id: 'report', v: '8 ساعات', l: 'تقارير يدوية ملغاة أسبوعياً',    client: 'أبيكس كابيتال' },
+                { id: 'cost',   v: '40%',      l: 'خفض تكلفة البنية التحتية' },
+                { id: 'uptime', v: '99.9%',    l: 'استمرارية تشغيل مضمونة' },
+                { id: 'deploy', v: '60%',      l: 'نشر أسرع' },
+                { id: 'flows',  v: '12',       l: 'سير عمل مؤتمت بالكامل' },
+                { id: 'setup',  v: '34%',      l: 'وقت تهيئة أقصر' },
+                { id: 'report', v: '8 ساعات', l: 'تقارير يدوية ملغاة أسبوعياً' },
             ],
             services: {
                 label: 'قدراتنا الأساسية',
                 title: 'تقنية معقدة.\nنتائج واضحة.',
-                sub: 'تسع خدمات متخصصة. مرر لاستكشافها — أو اعرض جميع الخدمات للصورة الكاملة.',
-                items: [
-                    { id:'azure', kicker:'السحابة والبنية التحتية', title:'هندسة Azure والترحيل السحابي', desc:'بيئات Azure آمنة وقابلة للتوسع مبنية حول أحمال العمل ومتطلبات الحوكمة، من التقييم حتى الترحيل.', offerings:['تقييم الجاهزية السحابية','Azure Landing Zones','ترحيل أحمال العمل'], img:'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&q=70&auto=format&fit=crop', color:'#0EA5E9' },
-                    { id:'devops', kicker:'السحابة والبنية التحتية', title:'DevOps والنشر والموثوقية', desc:'خطوط إنتاج وأسس تشغيلية تجعل الإصدارات قابلة للتوقع والمراقبة والاستعادة.', offerings:['خطوط CI/CD','الحاويات والخدمات المصغرة','المراقبة والتنبيهات'], img:'https://images.unsplash.com/photo-1518432031352-d6fc5c10da5a?w=600&q=70&auto=format&fit=crop', color:'#0EA5E9' },
-                    { id:'platforms', kicker:'الهندسة المخصصة', title:'المنصات المتكاملة والأنظمة المخصصة', desc:'منصات أعمال وبوابات وأدوات داخلية وواجهات برمجية مصممة حول سير العمل الحقيقي.', offerings:['منصات ويب مخصصة','بوابات المؤسسات','هندسة الواجهات البرمجية'], img:'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&q=70&auto=format&fit=crop', color:'#6366F1' },
-                    { id:'mvp', kicker:'الهندسة المخصصة', title:'هندسة المنتجات والنماذج الأولية', desc:'مسار منضبط من فكرة المنتج إلى إصدار مُثبت وجاهز للإنتاج للمؤسسين وفرق الابتكار.', offerings:['اكتشاف المنتج','هندسة UX/UI','تطوير MVP'], img:'https://images.unsplash.com/photo-1531403009284-440f080d1e12?w=600&q=70&auto=format&fit=crop', color:'#6366F1' },
-                    { id:'automation', kicker:'البيانات والأتمتة', title:'أتمتة سير العمل والتكامل', desc:'سير عمل مترابط يلغي المهام المتكررة وينقل المعلومات بموثوقية بين الفرق والأدوات والعملاء.', offerings:['تنسيق n8n','موصلات الأنظمة','تكامل API وWebhooks'], img:'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'data', kicker:'البيانات والأتمتة', title:'تحليلات البيانات وذكاء الأعمال', desc:'خطوط بيانات موثوقة ولوحات قرار تحوّل البيانات التشغيلية المتفرقة إلى مصدر موحد للحقيقة.', offerings:['خطوط البيانات','لوحات الإدارة','أتمتة التقارير'], img:'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'ai', kicker:'البيانات والأتمتة', title:'الذكاء الاصطناعي التطبيقي وأنظمة الاسترجاع', desc:'مساعدون واستخراج ذكي للمستندات يستندون إلى مصادرك — إجابات موثّقة بالعربية والإنجليزية داخل بيئة Azure الخاصة بك.', offerings:['استرجاع ثنائي اللغة','ذكاء المستندات','تكييف النماذج'], img:'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&q=70&auto=format&fit=crop', color:'#10B981' },
-                    { id:'optimization', kicker:'البيانات والأتمتة', title:'الصيانة وتحسين الأداء', desc:'تحديث موجه للأنظمة المتأثرة ببطء الواجهات أو هشاشة الشفرة أو اختناقات قواعد البيانات.', offerings:['تحديث الأنظمة القديمة','تحسين API','ضبط قواعد البيانات'], img:'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&q=70&auto=format&fit=crop', color:'#14B8A6' },
-                    { id:'creative', kicker:'الإبداع والنمو', title:'تصميم المنتج والهوية والنمو الرقمي', desc:'خدمات مكملة في تجربة المنتج والهوية والنمو تساعد الحلول التقنية القوية على الانطلاق بوضوح.', offerings:['تصميم UX/UI والمنتج','الهوية التجارية','أنظمة الإطلاق'], img:'https://images.unsplash.com/photo-1558655146-d09347e92766?w=600&q=70&auto=format&fit=crop', color:'#F59E0B' },
-                ],
+                sub: (n) => `${n} خدمات متخصصة. مرر لاستكشافها — أو اعرض جميع الخدمات للصورة الكاملة.`,
             },
             platform: {
                 label: 'مبني على',
@@ -148,6 +127,9 @@
     let locale = $derived(page.props.locale)
     let isAR   = $derived(locale === 'ar')
     let c      = $derived(isAR ? content.ar : content.en)
+
+    // Carousel cards come from the shared catalog rather than a local copy.
+    let serviceCards = $derived(getServices(isAR ? 'ar' : 'en'))
 
     // ── Hero entrance ──────────────────────────────────────────────
     /** @type {import('svelte/attachments').Attachment} */
@@ -258,7 +240,7 @@
 
         <div class="wrap hero-body">
             <p class="hero-eyebrow hero-enter he-1"><span class="status-dot"></span>{c.hero.eyebrow}</p>
-            <p class="hero-brand hero-enter he-1">{isAR ? 'نيوترونيكس' : 'Neutronix'}<span class="dot">•</span></p>
+            <p class="hero-brand hero-enter he-1" dir="ltr">Neutronix<span class="dot">•</span></p>
 
             <h1 class="hero-h1 hero-enter he-2">
                 {c.hero.line1}<br>
@@ -270,7 +252,7 @@
 
             <div class="hero-ctas hero-enter he-4">
                 <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.hero.cta1}</Link>
-                <Link href={isAR ? '/ar/services' : '/services'} class="btn-ghost">{c.hero.cta2} →</Link>
+                <Link href={isAR ? '/ar/services' : '/services'} class="btn-ghost">{c.hero.cta2} <span aria-hidden="true">{isAR ? '←' : '→'}</span></Link>
             </div>
         </div>
         <div class="scroll-hint hero-enter he-4" aria-hidden="true">
@@ -291,7 +273,6 @@
                         <li class="ps-item">
                             <span class="ps-v">{item.v}</span>
                             <span class="ps-l">{item.l}</span>
-                            <span class="ps-client">{item.client}</span>
                         </li>
                     {/each}
                 </ul>
@@ -307,29 +288,29 @@
                     <span class="label-accent">{c.services.label}</span>
                     <h2 class="sh-h2" style="white-space:pre-line">{c.services.title}</h2>
                 </div>
-                <p class="sh-p svc-header-right">{c.services.sub}</p>
+                <p class="sh-p svc-header-right">{c.services.sub(serviceCards.length)}</p>
             </header>
 
             <div class="svc-track-outer" bind:this={sliderViewport}>
                 <div class="svc-track" bind:this={sliderTrack}>
-                    {#each c.services.items as s (s.id)}
+                    {#each serviceCards as s (s.slug)}
                         <article class="svc-card" style="--card-color:{s.color}">
                             <!-- Image panel at top -->
                             <div class="svc-card-img">
-                                <img src={s.img} alt="" loading="lazy" />
+                                <img src={s.image} alt="" loading="lazy" />
                                 <div class="svc-card-img-overlay" style="background:linear-gradient(160deg,{s.color}33 0%,{s.color}11 100%)"></div>
-                                <span class="svc-tag">{s.kicker}</span>
+                                <span class="svc-tag">{s.eyebrowShort}</span>
                             </div>
                             <!-- Text body -->
                             <div class="svc-card-body">
                                 <h3 class="svc-title">{s.title}</h3>
-                                <p class="svc-desc">{s.desc}</p>
+                                <p class="svc-desc">{s.summary}</p>
                                 <ul class="svc-chips">
-                                    {#each s.offerings as offering (offering)}
-                                        <li>{offering}</li>
+                                    {#each s.features.slice(0, 3) as feature (feature)}
+                                        <li>{feature}</li>
                                     {/each}
                                 </ul>
-                                <Link href={isAR ? '/ar/services' : '/services'} class="svc-card-link" aria-label="{isAR ? 'اعرف المزيد عن' : 'Learn more about'} {s.kicker}">
+                                <Link href={s.href} class="svc-card-link" aria-label="{isAR ? 'اعرف المزيد عن' : 'Learn more about'} {s.title}">
                                     {isAR ? 'استكشف' : 'Explore'}
                                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                 </Link>
@@ -358,6 +339,17 @@
             <div class="proof-list">
                 {#each c.proof.items as item, i (item.key)}
                     <div class="proof-entry" {@attach reveal({ delay: i * 80 })}>
+                        <span class="proof-icon" aria-hidden="true">
+                            {#if item.key === '01'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><path stroke-linecap="round" stroke-linejoin="round" d="M7.25 18.5h9.5a4 4 0 0 0 .65-7.95A5.75 5.75 0 0 0 6.3 9.2a4.7 4.7 0 0 0 .95 9.3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m9.25 14.25 1.8 1.8 3.9-3.9" /></svg>
+                            {:else if item.key === '02'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><circle cx="12" cy="12" r="8.25" /><circle cx="12" cy="12" r="3.25" /><path stroke-linecap="round" d="M12 3.75V6m0 12v2.25M3.75 12H6m12 0h2.25" /></svg>
+                            {:else if item.key === '03'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><path stroke-linecap="round" stroke-linejoin="round" d="m9.4 14.6-1.55 1.55a3.25 3.25 0 0 1-4.6-4.6l2.3-2.3a3.25 3.25 0 0 1 4.6 0" /><path stroke-linecap="round" stroke-linejoin="round" d="m14.6 9.4 1.55-1.55a3.25 3.25 0 1 1 4.6 4.6l-2.3 2.3a3.25 3.25 0 0 1-4.6 0" /><path stroke-linecap="round" d="m8.75 15.25 6.5-6.5" /></svg>
+                            {:else}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><circle cx="12" cy="12" r="8.5" /><path stroke-linecap="round" d="M3.5 12h17M12 3.5c2.2 2.3 3.3 5.15 3.3 8.5S14.2 18.2 12 20.5C9.8 18.2 8.7 15.35 8.7 12S9.8 5.8 12 3.5Z" /></svg>
+                            {/if}
+                        </span>
                         <h3 class="proof-entry-title">{item.title}</h3>
                         <p class="proof-entry-desc">{item.desc}</p>
                     </div>
@@ -430,7 +422,7 @@
             <span class="label-accent cta-pill">{c.cta.label}</span>
             <h2 class="cta-h2" style="white-space:pre-line">{c.cta.title}</h2>
             <p  class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-cta-dark">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-cta-dark">{c.cta.btn} <span aria-hidden="true">{isAR ? '←' : '→'}</span></Link>
         </div>
     </section>
 </PublicLayout>
@@ -525,7 +517,11 @@
     background: var(--color-ember);
     box-shadow: 0 0 0 0.3rem rgba(37,99,235,0.15);
 }
-:global([dir="rtl"]) .hero-eyebrow { font-family: var(--font-arabic); letter-spacing: 0.04em; }
+:global([dir="rtl"]) .hero-eyebrow {
+    font-family: var(--font-arabic);
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
 .hero-brand {
     font-family: var(--font-display);
     font-size: clamp(2.75rem, 7vw, 5.5rem);
@@ -534,15 +530,11 @@
     line-height: 1.05;
     color: var(--color-surface);
     margin: 0 0 1rem;
-}
-:global([dir="rtl"]) .hero-brand {
-    font-family: var(--font-arabic);
-    letter-spacing: 0;
-    line-height: 1.25;
+    direction: ltr;
 }
 .hero-brand .dot {
     color: var(--color-ember);
-    margin-inline-start: 0.15em;
+    margin-left: 0.15em;
 }
 .hero-h1 {
     font-size: clamp(1.5rem, 3.2vw, 2.5rem);
@@ -556,8 +548,12 @@
 }
 :global([dir="rtl"]) .hero-h1 {
     font-family: var(--font-arabic);
+    font-size: clamp(1.25rem, 2.35vw, 1.875rem);
+    font-weight: 600;
     letter-spacing: 0;
-    line-height: 1.25;
+    line-height: 1.65;
+    margin: 0 0 1.4rem;
+    max-width: 32ch;
 }
 .em { color: var(--color-ember); font-style: normal; }
 .hero-sub {
@@ -568,7 +564,14 @@
     margin-bottom: 2.25rem;
     text-align: center;
 }
-:global([dir="rtl"]) .hero-sub { font-family: var(--font-arabic); max-width: 38ch; }
+:global([dir="rtl"]) .hero-sub {
+    font-family: var(--font-arabic);
+    font-size: clamp(0.875rem, 1.1vw, 1rem);
+    font-weight: 400;
+    line-height: 1.8;
+    max-width: 44ch;
+    margin-bottom: 2rem;
+}
 .hero-ctas {
     display: flex;
     gap: 1rem;
@@ -673,14 +676,6 @@
     color: var(--color-ink);
 }
 :global([dir="rtl"]) .ps-l { font-family: var(--font-arabic); }
-.ps-client {
-    font-size: 0.625rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-muted);
-}
-:global([dir="rtl"]) .ps-client { font-family: var(--font-arabic); letter-spacing: 0.03em; }
 
 /* ── FILAMENT ACCENTS (static CSS/SVG — echo hero field) ─────── */
 .filament {
@@ -758,7 +753,7 @@
 :global([dir="rtl"]) .sh-h2 {
     font-family: var(--font-arabic);
     letter-spacing: 0;
-    line-height: 1.25;
+    line-height: 1.45;
 }
 .sh-p {
     color: var(--color-muted);
@@ -924,10 +919,11 @@
 .svc-footer-row {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 2rem;
     margin-top: 2rem;
     flex-wrap: wrap;
+    width: 100%;
 }
 /* Only meaningful while GSAP drives the track */
 .svc-progress-bar {
@@ -952,6 +948,8 @@
     flex-shrink: 0;
     font-size: 0.75rem !important;
     padding: 0.6rem 1.25rem !important;
+    margin-inline: auto !important;
+    text-align: center;
 }
 
 /* ── Pinned mode ──────────────────────────────────────────────
@@ -990,6 +988,10 @@
     }
     .svc-footer-row {
         margin-top: 1.25rem;
+        justify-content: flex-end;
+    }
+    :global(.svc-all-btn) {
+        margin-inline: 0 !important;
     }
     .svc-progress-bar {
         display: block;
@@ -999,7 +1001,7 @@
 /* ── PROOF BAND (light) ──────────────────────────────────────── */
 .proof-band {
     background: var(--color-surface);
-    border-top: 1px solid var(--color-ash);
+    border-top: 1px solid #CAD0DC;
     padding-block: 5rem;
 }
 .proof-eyebrow {
@@ -1008,7 +1010,7 @@
     gap: 0.5rem;
     margin-bottom: 3.5rem;
     padding-bottom: 2.5rem;
-    border-bottom: 1px solid var(--color-ash);
+    border-bottom: 1px solid #CAD0DC;
 }
 .proof-tagline {
     font-family: var(--font-display);
@@ -1029,31 +1031,27 @@
 @media (min-width: 1024px) { .proof-list { grid-template-columns: repeat(4, 1fr); } }
 .proof-entry {
     padding: 2rem 1.5rem 2rem 0;
-    border-bottom: 1px solid var(--color-ash);
+    border-bottom: 1px solid #CAD0DC;
     position: relative;
 }
 @media (min-width: 600px) {
-    .proof-entry { padding: 2rem; border-inline-end: 1px solid var(--color-ash); }
+    .proof-entry { padding: 2rem; border-inline-end: 1px solid #CAD0DC; }
 }
-.proof-entry::after {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0;
-    top: 0;
-    width: 2.5rem;
-    height: 3px;
-    background: var(--color-ember);
-    border-radius: 0 0 3px 3px;
+.proof-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    display: grid;
+    place-items: center;
+    color: var(--color-ember);
+    transition: transform 240ms ease, color 240ms ease;
 }
-@media (min-width: 600px) {
-    .proof-entry::after { top: 0; left: 2rem; width: 2.5rem; }
-}
+.proof-icon svg { width: 2.1rem; height: 2.1rem; }
+.proof-entry:hover .proof-icon { transform: translateY(-2px); color: var(--color-ember-dark); }
 .proof-entry-title {
     font-size: 1.0625rem;
     font-weight: 700;
     color: var(--color-ink);
-    margin-bottom: 0.625rem;
-    margin-top: 1.75rem;
+    margin: 0.875rem 0 0.625rem;
 }
 :global([dir="rtl"]) .proof-entry-title { font-family: var(--font-arabic); }
 .proof-entry-desc {
@@ -1072,7 +1070,7 @@
     gap: 1rem 1.75rem;
     margin-top: 3.25rem;
     padding-top: 2.25rem;
-    border-top: 1px solid var(--color-ash);
+    border-top: 1px solid #CAD0DC;
 }
 .platform-label {
     font-size: 0.625rem;
@@ -1136,8 +1134,23 @@
     position: relative;
     z-index: 1;
 }
+.process-band .label-accent {
+    color: #93C5FD;
+    margin-bottom: 0.875rem;
+}
 .process-title {
     color: #fff;
+    font-size: clamp(1.85rem, 3.6vw, 2.75rem);
+    line-height: 1.2;
+    margin: 0.75rem 0 3rem;
+}
+:global([dir="rtl"]) .process-title {
+    font-family: var(--font-arabic);
+    font-size: clamp(1.55rem, 3vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.6;
+    margin: 0.85rem 0 3.25rem;
 }
 .process-band .steps {
     display: grid;
@@ -1211,7 +1224,10 @@
     flex-direction: column;
     align-items: flex-start;
 }
-:global([dir="rtl"]) .cta-body { align-items: flex-end; }
+:global([dir="rtl"]) .cta-body {
+    align-items: center;
+    text-align: center;
+}
 .cta-pill {
     color: var(--color-ember);
 }
@@ -1219,9 +1235,9 @@
     font-size: clamp(2.25rem, 5.25vw, 4.35rem);
     font-weight: 800;
     letter-spacing: -0.04em;
-    line-height: 1.06;
+    line-height: 1.12;
     color: var(--color-ink);
-    margin: 0.6rem 0 1rem;
+    margin: 1rem 0 1.5rem;
 }
 .cta-punch:global(.reveal) .cta-h2 {
     transform: scale(0.96);
@@ -1249,17 +1265,28 @@
 }
 :global([dir="rtl"]) .cta-h2 {
     font-family: var(--font-arabic);
+    font-size: clamp(1.85rem, 3.8vw, 3.15rem);
+    font-weight: 700;
     letter-spacing: 0;
-    line-height: 1.2;
+    line-height: 1.55;
+    text-align: center;
+    margin: 1.25rem 0 1.75rem;
 }
 .cta-sub {
     color: var(--color-muted);
     font-size: 1.0625rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.25rem;
     max-width: 46ch;
-    line-height: 1.6;
+    line-height: 1.65;
 }
-:global([dir="rtl"]) .cta-sub { font-family: var(--font-arabic); max-width: 38ch; }
+:global([dir="rtl"]) .cta-sub {
+    font-family: var(--font-arabic);
+    font-size: clamp(0.95rem, 1.2vw, 1.0625rem);
+    line-height: 1.8;
+    max-width: 44ch;
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
 :global(.btn-cta-dark) {
     display: inline-flex;
     align-items: center;
@@ -1328,25 +1355,39 @@
 }
 :global([dir="rtl"]) .qatar-inner { text-align: right; }
 .qatar-label {
-    color: color-mix(in srgb, var(--color-ember) 85%, white);
+    color: #93C5FD;
+    text-shadow: 0 0 20px rgba(96, 165, 250, 0.35);
+    margin-bottom: 1.25rem;
 }
 .qatar-h2 {
     font-family: var(--font-display);
     font-size: clamp(1.75rem, 4vw, 3rem);
     font-weight: 800;
     letter-spacing: -0.03em;
-    line-height: 1.1;
+    line-height: 1.18;
     color: #ffffff;
-    margin: 0.75rem 0 1rem;
+    margin: 1.15rem 0 1.5rem;
 }
-:global([dir="rtl"]) .qatar-h2 { font-family: var(--font-arabic); letter-spacing: 0; line-height: 1.25; }
+:global([dir="rtl"]) .qatar-h2 {
+    font-family: var(--font-arabic);
+    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1.55;
+    margin: 1.25rem 0 1.75rem;
+}
 .qatar-p {
-    color: rgba(255,255,255,0.68);
+    color: rgba(255,255,255,0.75);
     font-size: clamp(0.9375rem, 1.3vw, 1.0625rem);
-    line-height: 1.75;
+    line-height: 1.8;
     max-width: 44ch;
 }
-:global([dir="rtl"]) .qatar-p { font-family: var(--font-arabic); max-width: 38ch; }
+:global([dir="rtl"]) .qatar-p {
+    font-family: var(--font-arabic);
+    font-size: clamp(0.9rem, 1.15vw, 1.025rem);
+    line-height: 1.85;
+    max-width: 42ch;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .cta-punch .cta-h2,

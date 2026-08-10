@@ -36,11 +36,11 @@
     }
 
     function applyStatus(event) {
-        loadInquiries({ status: event.currentTarget.value || undefined })
+        loadInquiries({ status: event.currentTarget.value })
     }
 
     function applyService(event) {
-        loadInquiries({ service: event.currentTarget.value || undefined })
+        loadInquiries({ service: event.currentTarget.value })
     }
 
     function clearFilters() {
@@ -176,7 +176,6 @@
                         <tr class:unread-row={inquiry.status === 'unread'}>
                             <td>
                                 <div class="client-cell">
-                                    <span class="client-avatar">{initials(inquiry.name)}</span>
                                     <div>
                                         <strong>{inquiry.name}</strong>
                                         <span>{inquiry.company}</span>
@@ -421,19 +420,7 @@ tbody tr { transition: background 150ms ease; }
 tbody tr:hover { background: color-mix(in srgb, var(--color-canvas) 55%, white); }
 tbody tr:last-child td { border-bottom: 0; }
 .unread-row td:first-child { box-shadow: inset 3px 0 var(--color-ember); }
-.client-cell { display: flex; align-items: center; gap: 0.7rem; }
-.client-avatar {
-    width: 2.1rem;
-    height: 2.1rem;
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--color-ember) 10%, white);
-    color: var(--color-ember);
-    font-size: 0.625rem;
-    font-weight: 800;
-}
+.client-cell { display: flex; align-items: center; }
 .client-cell div { display: flex; min-width: 0; flex-direction: column; }
 .client-cell strong { color: var(--color-ink); font-size: 0.75rem; font-weight: 700; }
 .client-cell span:last-child { color: var(--color-muted); font-size: 0.6875rem; }

@@ -10,49 +10,59 @@
     let email    = $state('')
     let photo    = $state(null)
     let photoPreview = $state('')
+    let syncedAdminId = $state(null)
 
     // Sync from props on mount or update
     $effect(() => {
-        if (admin) {
-            name = name || admin.name || ''
-            username = username || admin.username || ''
-            email = email || admin.email || ''
-            photoPreview = photoPreview || admin.photo_url || ''
-        }
+        const adminId = admin?.id ?? null
+        if (adminId === syncedAdminId) return
+
+        syncedAdminId = adminId
+        name = admin?.name ?? ''
+        username = admin?.username ?? ''
+        email = admin?.email ?? ''
+        photoPreview = admin?.photo_url ?? ''
     })
 
     let isSavingProfile = $state(false)
-    let clientProfileErrors = $state({ name: '', username: '', email: '' })
-    let serverProfileErrors = $derived(page.props.errors || {})
+    let serverErrors = $derived(page.props.errors || {})
 
-    // Consolidated profile errors
+    function firstError(error) {
+        return Array.isArray(error) ? error[0] : error || ''
+    }
+
     let profileErrors = $derived({
-        name: clientProfileErrors.name || (serverProfileErrors.name ? (Array.isArray(serverProfileErrors.name) ? serverProfileErrors.name[0] : serverProfileErrors.name) : ''),
-        username: clientProfileErrors.username || (serverProfileErrors.username ? (Array.isArray(serverProfileErrors.username) ? serverProfileErrors.username[0] : serverProfileErrors.username) : ''),
-        email: clientProfileErrors.email || (serverProfileErrors.email ? (Array.isArray(serverProfileErrors.email) ? serverProfileErrors.email[0] : serverProfileErrors.email) : ''),
-        photo: serverProfileErrors.photo ? (Array.isArray(serverProfileErrors.photo) ? serverProfileErrors.photo[0] : serverProfileErrors.photo) : ''
+        name: firstError(serverErrors.name),
+        username: firstError(serverErrors.username),
+        email: firstError(serverErrors.email),
+        photo: firstError(serverErrors.photo),
     })
 
     // ── Password Form State ────────────────────────────────────────
     let current_password = $state('')
     let password         = $state('')
     let password_confirmation = $state('')
+    let showCurrentPassword = $state(false)
+    let passwordRequirements = $derived([
+        { label: '8+ characters', met: password.length >= 8 },
+        { label: 'Lowercase', met: /\p{Ll}/u.test(password) },
+        { label: 'Uppercase', met: /\p{Lu}/u.test(password) },
+        { label: 'Number', met: /\p{N}/u.test(password) },
+        { label: 'Symbol', met: /[\p{Z}\p{S}\p{P}]/u.test(password) },
+    ])
+    let metPasswordRequirements = $derived(passwordRequirements.filter((requirement) => requirement.met).length)
 
     let isSavingPassword = $state(false)
-    let clientPasswordErrors = $state({ current_password: '', password: '', password_confirmation: '' })
-    let serverPasswordErrors = $derived(page.props.errors || {})
-
-    // Consolidated password errors
     let passwordErrors = $derived({
-        current_password: clientPasswordErrors.current_password || (serverPasswordErrors.current_password ? (Array.isArray(serverPasswordErrors.current_password) ? serverPasswordErrors.current_password[0] : serverPasswordErrors.current_password) : ''),
-        password: clientPasswordErrors.password || (serverPasswordErrors.password ? (Array.isArray(serverPasswordErrors.password) ? serverPasswordErrors.password[0] : serverPasswordErrors.password) : ''),
-        password_confirmation: clientPasswordErrors.password_confirmation || (serverPasswordErrors.password_confirmation ? (Array.isArray(serverPasswordErrors.password_confirmation) ? serverPasswordErrors.password_confirmation[0] : serverPasswordErrors.password_confirmation) : '')
+        current_password: firstError(serverErrors.current_password),
+        password: firstError(serverErrors.password),
+        password_confirmation: firstError(serverErrors.password_confirmation),
     })
 
     let activeTab = $state('profile')
 
     $effect(() => {
-        if (serverPasswordErrors.current_password || serverPasswordErrors.password || serverPasswordErrors.password_confirmation) {
+        if (serverErrors.current_password || serverErrors.password || serverErrors.password_confirmation) {
             activeTab = 'security'
         }
     })
@@ -86,28 +96,6 @@
     // Submit profile updates
     function handleUpdateProfile(e) {
         e.preventDefault()
-        
-        // Reset client errors
-        clientProfileErrors.name = ''
-        clientProfileErrors.username = ''
-        clientProfileErrors.email = ''
-
-        let hasError = false
-
-        if (!name.trim()) {
-            clientProfileErrors.name = 'Name is required.'
-            hasError = true
-        }
-        if (!username.trim()) {
-            clientProfileErrors.username = 'Username is required.'
-            hasError = true
-        }
-        if (!email.trim()) {
-            clientProfileErrors.email = 'Email is required.'
-            hasError = true
-        }
-
-        if (hasError) return
 
         isSavingProfile = true
 
@@ -131,31 +119,6 @@
     function handleUpdatePassword(e) {
         e.preventDefault()
 
-        // Reset client errors
-        clientPasswordErrors.current_password = ''
-        clientPasswordErrors.password = ''
-        clientPasswordErrors.password_confirmation = ''
-
-        let hasError = false
-
-        if (!current_password) {
-            clientPasswordErrors.current_password = 'Current password is required.'
-            hasError = true
-        }
-        if (!password) {
-            clientPasswordErrors.password = 'New password is required.'
-            hasError = true
-        } else if (password.length < 8) {
-            clientPasswordErrors.password = 'Password must be at least 8 characters.'
-            hasError = true
-        }
-        if (password !== password_confirmation) {
-            clientPasswordErrors.password_confirmation = 'Passwords do not match.'
-            hasError = true
-        }
-
-        if (hasError) return
-
         isSavingPassword = true
 
         router.post('/admin/profile/password', {
@@ -168,6 +131,7 @@
                 current_password = ''
                 password = ''
                 password_confirmation = ''
+                showCurrentPassword = false
             },
             onFinish: () => {
                 isSavingPassword = false
@@ -235,14 +199,17 @@
                                 {/if}
                             </div>
                             <div class="avatar-upload-inputs">
-                                <label for="photo-input" class="btn-primary btn-upload">Select Photo</label>
-                                <input
-                                    type="file"
-                                    id="photo-input"
-                                    accept="image/*"
-                                    onchange={handlePhotoChange}
-                                    class="hidden-file-input"
-                                />
+                                <label class="btn-upload">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="2" /><circle cx="8.5" cy="10" r="1.5" /><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 16 4-3.5 3.5 3 2.5-2 5 4" /></svg>
+                                    Choose photo
+                                    <input
+                                        type="file"
+                                        id="photo-input"
+                                        accept="image/*"
+                                        onchange={handlePhotoChange}
+                                        class="hidden-file-input"
+                                    />
+                                </label>
                                 <span class="upload-tip text-muted">JPEG, PNG, JPG or WEBP. Max 2MB.</span>
                             </div>
                         </div>
@@ -310,14 +277,29 @@
                     <form onsubmit={handleUpdatePassword} novalidate class="p-form">
                         <div class="field-grp">
                             <label for="current_password" class="f-label">Current Password</label>
-                            <input
-                                type="password"
-                                id="current_password"
-                                bind:value={current_password}
-                                class="f-input"
-                                class:has-error={passwordErrors.current_password}
-                                placeholder="••••••••"
-                            />
+                            <div class="password-input-wrap">
+                                <input
+                                    type={showCurrentPassword ? 'text' : 'password'}
+                                    id="current_password"
+                                    bind:value={current_password}
+                                    class="f-input"
+                                    class:has-error={passwordErrors.current_password}
+                                    placeholder="••••••••"
+                                />
+                                <button
+                                    type="button"
+                                    class="visibility-toggle"
+                                    onclick={() => showCurrentPassword = !showCurrentPassword}
+                                    aria-label={showCurrentPassword ? 'Hide current password' : 'Show current password'}
+                                    aria-pressed={showCurrentPassword}
+                                >
+                                    {#if showCurrentPassword}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 5.2A10.7 10.7 0 0 1 12 5c6 0 9.5 7 9.5 7a15.7 15.7 0 0 1-2.1 3.2M6.3 6.3C3.8 8 2.5 12 2.5 12s3.5 7 9.5 7a9.7 9.7 0 0 0 3.2-.5" /></svg>
+                                    {:else}
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7Z" /><circle cx="12" cy="12" r="2.5" /></svg>
+                                    {/if}
+                                </button>
+                            </div>
                             {#if passwordErrors.current_password}
                                 <span class="error-text">{passwordErrors.current_password}</span>
                             {/if}
@@ -332,10 +314,36 @@
                                 class="f-input"
                                 class:has-error={passwordErrors.password}
                                 placeholder="••••••••"
+                                aria-describedby="password-requirements"
                             />
                             {#if passwordErrors.password}
                                 <span class="error-text">{passwordErrors.password}</span>
                             {/if}
+                            <div
+                                class="password-meter"
+                                class:complete={metPasswordRequirements === passwordRequirements.length}
+                                id="password-requirements"
+                                role="status"
+                                aria-live="polite"
+                            >
+                                <div class="password-meter-head">
+                                    <span>Password requirements</span>
+                                    <span>{metPasswordRequirements}/{passwordRequirements.length}</span>
+                                </div>
+                                <div class="password-meter-bars" aria-hidden="true">
+                                    {#each passwordRequirements as _, index}
+                                        <span class:met={index < metPasswordRequirements}></span>
+                                    {/each}
+                                </div>
+                                <ul class="password-requirements">
+                                    {#each passwordRequirements as requirement (requirement.label)}
+                                        <li class:met={requirement.met}>
+                                            <span aria-hidden="true"></span>
+                                            {requirement.label}
+                                        </li>
+                                    {/each}
+                                </ul>
+                            </div>
                         </div>
 
                         <div class="field-grp">
@@ -366,7 +374,9 @@
 <style>
 /* Form Layout Grid */
 .profile-shell {
-    max-width: 860px;
+    width: 100%;
+    max-width: 720px;
+    margin-inline: auto;
     background: var(--color-surface);
     border: 1px solid var(--color-ash);
     border-radius: 20px;
@@ -409,40 +419,43 @@
 .profile-panel:focus { outline: none; }
 .profile-card { padding: 1.5rem; }
 @media (min-width: 640px) {
-    .profile-card { padding: 2.5rem; }
+    .profile-card { padding: 2rem; }
 }
 .card-title {
+    max-width: 540px;
+    margin: 0 auto 0.375rem;
     font-size: 1.25rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin: 0 0 0.5rem;
 }
 .card-subtitle {
+    max-width: 540px;
+    margin: 0 auto 1.5rem;
     font-size: 0.875rem;
     color: var(--color-muted);
     line-height: 1.6;
-    margin: 0 0 2rem;
 }
 .p-form {
     display: flex;
-    max-width: 640px;
+    max-width: 540px;
+    margin-inline: auto;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 1rem;
 }
-.security-card .p-form { max-width: 560px; }
-.form-submit { width: max-content; margin-top: 0.25rem; border-radius: 10px; }
+.security-card .p-form { max-width: 500px; }
+.form-submit { width: max-content; margin-top: 0.25rem; border-radius: 10px; align-self: center; }
 .form-submit:disabled { cursor: wait; opacity: 0.65; }
 
 /* Avatar Upload Block */
 .avatar-upload-block {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
+    gap: 1rem;
     margin-bottom: 0.25rem;
 }
 .avatar-preview-circle {
-    width: 72px;
-    height: 72px;
+    width: 64px;
+    height: 64px;
     background-color: var(--color-canvas);
     border: 1px solid var(--color-ash);
     border-radius: 50%;
@@ -460,8 +473,36 @@
     color: var(--color-ink);
 }
 .avatar-upload-inputs { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
-.btn-upload { padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.6875rem; cursor: pointer; }
-.hidden-file-input { display: none; }
+.btn-upload {
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--color-ash);
+    border-radius: 9px;
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: border-color 160ms ease, color 160ms ease, background 160ms ease;
+}
+.btn-upload svg { width: 0.9rem; height: 0.9rem; }
+.btn-upload:hover { border-color: var(--color-ember); color: var(--color-ember); background: var(--color-canvas); }
+.hidden-file-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+.btn-upload:has(.hidden-file-input:focus-visible) {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 2px;
+}
 .upload-tip { font-size: 0.6875rem; }
 
 /* Input Fields styling */
@@ -495,6 +536,59 @@
 .f-input.has-error { border-color: #EF4444; }
 .f-input.has-error:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
 .error-text { font-size: 0.75rem; color: #DC2626; font-weight: 500; margin-top: 0.125rem; }
+.password-input-wrap { position: relative; }
+.password-input-wrap .f-input { padding-inline-end: 3rem; }
+.visibility-toggle {
+    position: absolute;
+    top: 50%;
+    inset-inline-end: 0.45rem;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+    transform: translateY(-50%);
+}
+.visibility-toggle:hover { color: var(--color-ember); background: var(--color-surface); }
+.visibility-toggle:focus-visible { outline: 2px solid var(--color-ember); outline-offset: 1px; }
+.visibility-toggle svg { width: 1.05rem; height: 1.05rem; }
+.password-meter { padding-top: 0.15rem; }
+.password-meter-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    color: var(--color-muted);
+    font-size: 0.6875rem;
+    font-weight: 700;
+}
+.password-meter-bars { display: flex; gap: 0.3rem; margin-top: 0.55rem; }
+.password-meter-bars span { flex: 1; height: 3px; border-radius: 999px; background: var(--color-ash); transition: background 160ms ease; }
+.password-meter-bars span.met { background: var(--color-ember); }
+.password-meter.complete .password-meter-bars span.met { background: #047857; }
+.password-requirements {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.8rem;
+    margin: 0.65rem 0 0;
+    padding: 0;
+    list-style: none;
+}
+.password-requirements li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--color-muted);
+    font-size: 0.625rem;
+    font-weight: 650;
+}
+.password-requirements li > span { width: 0.35rem; height: 0.35rem; border-radius: 50%; background: var(--color-ash); }
+.password-requirements li.met { color: #047857; }
+.password-requirements li.met > span { background: #047857; }
 @media (max-width: 479px) {
     .avatar-upload-block { align-items: flex-start; }
     .profile-tabs { padding: 0.5rem; }

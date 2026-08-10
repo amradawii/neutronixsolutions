@@ -11,7 +11,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
     // Guest Admin Routes
     Route::middleware('guest:admin')->group(function () {
         Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-        Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+        Route::post('/login', [AuthController::class, 'login'])
+            ->middleware('throttle:admin-login')
+            ->name('login.post');
     });
 
     // Authenticated Admin Routes

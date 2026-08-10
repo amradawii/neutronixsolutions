@@ -33,7 +33,6 @@
             links: [
                 { label: 'Home',     href: '/' },
                 { label: 'Services', href: '/services' },
-                { label: 'Work',     href: '/work' },
                 { label: 'About',    href: '/about' },
             ],
             langLabel: 'عربي',
@@ -44,7 +43,6 @@
             links: [
                 { label: 'الرئيسية',  href: '/ar' },
                 { label: 'الخدمات',  href: '/ar/services' },
-                { label: 'أعمالنا', href: '/ar/work' },
                 { label: 'من نحن',  href: '/ar/about' },
             ],
             langLabel: 'EN',
@@ -108,9 +106,6 @@
                         {link.label}
                     </Link>
                 {/each}
-                <Link href={langHref} class="ml" onclick={() => mobileOpen = false}>
-                    {c.langLabel}
-                </Link>
                 <Link
                     href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'}
                     class="btn-primary mob-cta"
@@ -296,5 +291,15 @@
 .nav.nav-dark :global(.ml:hover) { color: var(--color-surface); }
 .nav.nav-dark :global(.ml.active) { color: var(--color-ember); }
 
-:global(.mob-cta) { display: block; text-align: center; margin-top: 1.25rem; }
+:global(.mob-cta) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    text-align: center;
+    margin-top: 1.25rem;
+    padding: 0.65rem 1.5rem !important;
+    font-size: 0.75rem !important;
+    letter-spacing: 0.04em;
+}
 </style>

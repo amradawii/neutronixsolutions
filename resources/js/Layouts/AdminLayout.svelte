@@ -7,6 +7,7 @@
     let sidebarCollapsed = $state(false)
     let sidebarOpen      = $state(false)
     let profileOpen      = $state(false)
+    let profileDropdown = $state(null)
     let unreadInquiryCount = $derived(page.props.adminUnreadInquiries || 0)
 
     // Load initial collapse state on mount
@@ -31,10 +32,20 @@
         sidebarOpen = false
     }
 
+    function handleWindowClick(event) {
+        if (profileOpen && !profileDropdown?.contains(event.target)) profileOpen = false
+    }
+
+    function handleWindowKeydown(event) {
+        if (event.key === 'Escape') profileOpen = false
+    }
+
     function handleLogout() {
         router.post('/admin/logout')
     }
 </script>
+
+<svelte:window onclick={handleWindowClick} onkeydown={handleWindowKeydown} />
 
 <div class="admin-wrapper" class:collapsed={sidebarCollapsed} class:mobile-open={sidebarOpen}>
     <!-- Sidebar Navigation -->
@@ -102,7 +113,7 @@
 
             <!-- Profile Info dropdown on header right -->
             <div class="header-right">
-                <div class="profile-dropdown-wrapper">
+                <div class="profile-dropdown-wrapper" bind:this={profileDropdown}>
                     <button onclick={() => profileOpen = !profileOpen} class="profile-trigger" aria-expanded={profileOpen}>
                         <div class="avatar-circle">
                             {#if admin.photo_url}

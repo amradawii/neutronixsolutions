@@ -9,6 +9,19 @@ export const media = {
     homeHero: u('photo-1497366216548-37526070297c', 2400),
     servicesBand: u('photo-1553877522-43269d4ea984', 1800),
     aboutBand: u('photo-1522071820081-009f0129c71c', 1800),
+    /** Card imagery for the capability catalog, keyed by service id. */
+    services: {
+        azure:         u('photo-1544197150-b99a580bb7a8', 800), // Cloud datacenter & server architecture
+        devops:        u('photo-1618401471353-b98afee0b2eb', 800), // Developer CI/CD & deployment pipeline
+        observability: u('photo-1551288049-bebda4e38f71', 800), // SRE telemetry & analytics dashboard
+        platforms:     u('photo-1555066931-4365d14bab8c', 800), // Web platform engineering (kept - clean IDE)
+        mvp:           u('photo-1531403009284-440f080d1e12', 800), // Product prototyping & wireframing (kept)
+        automation:    u('photo-1504639725590-34d0984388bd', 800), // System integration & backend workflows
+        data:          u('photo-1518770660439-4636190af475', 800), // Data architecture & high-speed pipelines
+        ai:            u('photo-1620712943543-bcc4688e7485', 800), // Applied AI & neural network architecture
+        optimization:  u('photo-1558494949-ef010cbdcc31', 800), // Server hardware & performance tuning (kept)
+        creative:      u('photo-1581291518857-4e27b48ff24e', 800), // UI/UX design systems & digital product interfaces
+    },
     work: {
         valo: u('photo-1492144534655-ae79c964c9d7', 1600),
         apex: u('photo-1486406146926-c627a92ad1ab', 1600),

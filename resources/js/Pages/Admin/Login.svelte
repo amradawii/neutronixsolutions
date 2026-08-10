@@ -1,5 +1,6 @@
 <script>
     import { page, router } from '@inertiajs/svelte'
+    import { toast } from '../../lib/toast.js'
 
     // ── State ──────────────────────────────────────────────────────
     let username = $state('')
@@ -42,6 +43,10 @@
         isSubmitting = true
 
         router.post('/admin/login', { username, password }, {
+            onError: (errs) => {
+                const message = errs?.username || errs?.password || 'The provided credentials do not match our records.'
+                toast.error(Array.isArray(message) ? message[0] : message)
+            },
             onFinish: () => {
                 isSubmitting = false
             }
@@ -65,14 +70,6 @@
         <h1 class="login-title">Sign In</h1>
         <p class="login-subtitle">Access your agency administration panel.</p>
 
-        <!-- General validation error banner -->
-        {#if errors.username && !clientErrors.username && !clientErrors.password}
-            <div class="error-banner" role="alert">
-                <svg class="err-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M10.4 4.3 3.2 17a2 2 0 0 0 1.75 3h14.1a2 2 0 0 0 1.75-3L13.6 4.3a1.84 1.84 0 0 0-3.2 0Z" /><path stroke-linecap="round" d="M12 9v4m0 3h.01" /></svg>
-                <span>{errors.username}</span>
-            </div>
-        {/if}
-
         <!-- Novalidate overrides native browser popup dialogs -->
         <form onsubmit={handleLogin} novalidate class="login-form">
             <div class="field-grp">
@@ -85,8 +82,8 @@
                     class:has-error={errors.username}
                     placeholder="Enter admin username"
                 />
-                {#if errors.username}
-                    <span class="error-text">{errors.username}</span>
+                {#if clientErrors.username}
+                    <span class="error-text">{clientErrors.username}</span>
                 {/if}
             </div>
 
@@ -100,8 +97,8 @@
                     class:has-error={errors.password}
                     placeholder="Enter security password"
                 />
-                {#if errors.password}
-                    <span class="error-text">{errors.password}</span>
+                {#if clientErrors.password}
+                    <span class="error-text">{clientErrors.password}</span>
                 {/if}
             </div>
 
@@ -182,27 +179,6 @@
     color: var(--color-muted);
     line-height: 1.5;
     margin-bottom: 2rem;
-}
-
-/* Error Banner */
-.error-banner {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background-color: #FEF2F2;
-    border: 1px solid #EF4444;
-    color: #991B1B;
-    padding: 0.875rem 1rem;
-    border-radius: 12px;
-    font-size: 0.8125rem;
-    margin-bottom: 1.5rem;
-    line-height: 1.4;
-}
-.err-icon {
-    width: 1.1rem;
-    height: 1.1rem;
-    flex-shrink: 0;
-    color: #DC2626;
 }
 
 .login-form {

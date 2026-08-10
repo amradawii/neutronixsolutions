@@ -65,7 +65,7 @@
             },
             cta: {
                 label: 'اعمل معنا',
-                title: 'أخبرنا بما\nتحاول بناءه.',
+                title: 'أخبرنا بما تحاول بناءه.',
                 sub: 'أحضر القيد أو الموعد النهائي أو الفكرة غير المكتملة، وسنوضح لك بصراحة ما يتطلبه الأمر.',
                 btn: 'احجز استشارة تقنية',
             },
@@ -154,7 +154,15 @@
             <div class="values-grid" {@attach staggerIn({ selector: '.value', y: 28 })}>
                 {#each c.values as value (value.id)}
                     <article class="value">
-                        <span class="value-rule" aria-hidden="true"></span>
+                        <span class="value-icon" aria-hidden="true">
+                            {#if value.id === 'rigor'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3.25 19 6v5.1c0 4.45-2.8 7.7-7 9.65-4.2-1.95-7-5.2-7-9.65V6l7-2.75Z" /><path stroke-linecap="round" stroke-linejoin="round" d="m8.75 12 2.15 2.15 4.45-4.45" /></svg>
+                            {:else if value.id === 'clarity'}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><circle cx="12" cy="12" r="8.5" /><path stroke-linecap="round" stroke-linejoin="round" d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></svg>
+                            {:else}
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.35"><path stroke-linecap="round" stroke-linejoin="round" d="M4.25 19.25V5.5m0 13.75h15.5" /><path stroke-linecap="round" stroke-linejoin="round" d="m7 15.5 3.35-3.7 2.9 2.25L18.5 7.5" /><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 7.5h2.75v2.75" /></svg>
+                            {/if}
+                        </span>
                         <h3 class="value-title">{value.title}</h3>
                         <p class="value-desc">{value.desc}</p>
                     </article>
@@ -165,7 +173,8 @@
 
     <!-- ── DISCIPLINES — editorial rows, not cards ── -->
     <section class="team">
-        <div class="wrap">
+        <div class="team-glow" aria-hidden="true"></div>
+        <div class="wrap team-inner">
             <header class="sec-head sec-head-center">
                 <span class="label-accent team-label">{c.team.label}</span>
                 <h2 class="sec-title team-title" {@attach maskedLines()}>
@@ -200,7 +209,7 @@
                 {/each}
             </h2>
             <p class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.cta.btn} <span aria-hidden="true">{isAR ? '←' : '→'}</span></Link>
         </div>
     </section>
 </PublicLayout>
@@ -322,9 +331,10 @@
 }
 :global([dir="rtl"]) .mission-text {
     font-family: var(--font-arabic);
+    font-size: clamp(1.125rem, 2vw, 1.55rem);
     letter-spacing: 0;
-    line-height: 1.6;
-    max-width: 34ch;
+    line-height: 1.65;
+    max-width: 52ch;
 }
 
 /* ── SHARED SECTION HEADS ────────────────────────────────────── */
@@ -376,16 +386,17 @@
     border-color: color-mix(in srgb, var(--color-ember) 34%, transparent);
     box-shadow: 0 18px 40px rgba(8, 12, 21, 0.08);
 }
-.value-rule {
-    display: block;
-    width: 2.25rem;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--color-ember);
-    margin-bottom: 1.75rem;
-    transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+.value-icon {
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    margin-bottom: 1rem;
+    color: var(--color-ember);
+    transition: transform 280ms ease, color 280ms ease;
 }
-.value:hover .value-rule { width: 3.5rem; }
+.value-icon svg { width: 2.25rem; height: 2.25rem; }
+.value:hover .value-icon { transform: translateY(-3px); color: var(--color-ember-dark); }
 .value-title {
     font-size: 1.25rem;
     font-weight: 700;
@@ -405,8 +416,27 @@
 
 /* ── TEAM ────────────────────────────────────────────────────── */
 .team {
-    background: #0B0E14;
+    position: relative;
+    background-color: #0B0E14;
+    background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
     padding-block: 6rem;
+    overflow: hidden;
+}
+.team-glow {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 50% 30%, rgba(26,63,168,0.22) 0%, transparent 45%),
+        radial-gradient(circle at 15% 75%, rgba(14,165,233,0.08) 0%, transparent 35%),
+        radial-gradient(circle at 85% 65%, rgba(26,63,168,0.12) 0%, transparent 35%);
+    pointer-events: none;
+}
+.team-inner {
+    position: relative;
+    z-index: 1;
 }
 .team-label { color: color-mix(in srgb, var(--color-ember) 62%, white); }
 .team-title { color: var(--color-surface); }
@@ -505,7 +535,7 @@
 
 @media (prefers-reduced-motion: reduce) {
     .value,
-    .value-rule,
+    .value-icon,
     .disc-sweep,
     .disc-name {
         transition: none;

@@ -6,6 +6,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,22 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        RateLimiter::for('admin-login', function (Request $request) {
+            $username = Str::lower(trim((string) $request->input('username')));
+            $tooManyAttempts = fn () => back()->withErrors([
+                'username' => 'Too many login attempts. Please wait a minute and try again.',
+            ]);
+
+            return [
+                Limit::perMinute(20)
+                    ->by('admin-login-ip:'.$request->ip())
+                    ->response($tooManyAttempts),
+                Limit::perMinute(5)
+                    ->by('admin-login-user:'.$username.'|'.$request->ip())
+                    ->response($tooManyAttempts),
+            ];
+        });
+
         RateLimiter::for('consultations', function (Request $request) {
             if ($request->isAttemptingPrecognition()) {
                 return Limit::perMinute(60)->by('consultation-validation:'.$request->ip());

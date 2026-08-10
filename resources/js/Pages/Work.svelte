@@ -197,7 +197,7 @@
                 {/each}
             </h2>
             <p class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary">{c.cta.btn} <span aria-hidden="true">{isAR ? '←' : '→'}</span></Link>
         </div>
     </section>
 </PublicLayout>
@@ -473,7 +473,10 @@
     flex-direction: column;
     align-items: flex-start;
 }
-:global([dir="rtl"]) .cta-body { align-items: flex-end; text-align: right; }
+:global([dir="rtl"]) .cta-body {
+    align-items: flex-start;
+    text-align: right;
+}
 .cta-label { color: var(--color-ember); }
 .cta-title {
     font-size: clamp(1.875rem, 4.2vw, 3.25rem);
@@ -483,7 +486,7 @@
     color: var(--color-ink);
     margin: 0.25rem 0 1rem;
 }
-:global([dir="rtl"]) .cta-title { letter-spacing: 0; line-height: 1.3; }
+:global([dir="rtl"]) .cta-title { letter-spacing: 0; line-height: 1.3; text-align: right; }
 .cta-sub {
     color: var(--color-muted);
     font-size: 1rem;
@@ -491,7 +494,7 @@
     max-width: 48ch;
     margin: 0 0 1.75rem;
 }
-:global([dir="rtl"]) .cta-sub { font-family: var(--font-arabic); max-width: 40ch; }
+:global([dir="rtl"]) .cta-sub { font-family: var(--font-arabic); max-width: 40ch; text-align: right; }
 
 @media (prefers-reduced-motion: reduce) {
     .case-media img,

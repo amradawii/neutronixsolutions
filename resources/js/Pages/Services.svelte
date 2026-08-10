@@ -4,6 +4,7 @@
     import PublicLayout from '../Layouts/PublicLayout.svelte'
     import { media } from '../lib/media.js'
     import { reveal } from '../lib/reveal.js'
+    import { getServiceGroups, getServices } from '../lib/services.js'
     import { maskedLines, parallax, railProgress, staggerIn, toLines, watchSections, scrollToId } from '../lib/motion.js'
 
     const content = {
@@ -13,91 +14,14 @@
             subtitle: 'Engineering solutions for systems that need to perform, integrate, and scale.',
             desc: 'Engage one focused capability or combine disciplines under one accountable technical partner in Qatar.',
             facts: [
-                { id: 'count', v: '09', l: 'Focused capabilities' },
-                { id: 'groups', v: '04', l: 'Delivery categories' },
+                { id: 'count', l: 'Focused capabilities' },
+                { id: 'groups', l: 'Delivery categories' },
                 { id: 'cloud', v: 'Azure', l: 'Cloud foundation' },
                 { id: 'base', v: 'Doha', l: 'Engineering base' },
             ],
             navLabel: 'Jump to a category',
             deliverLabel: 'What we deliver',
-            categories: [
-                {
-                    id: 'cloud', tone: 'cloud',
-                    label: 'Cloud & Infrastructure',
-                    desc: 'Azure environments and the operational foundations that keep them secure, observable, and affordable.',
-                },
-                {
-                    id: 'engineering', tone: 'engineering',
-                    label: 'Custom Engineering & Startups',
-                    desc: 'Platforms, portals, and products engineered around real workflows instead of off-the-shelf limits.',
-                },
-                {
-                    id: 'intelligence', tone: 'data',
-                    label: 'Data & Intelligent Automation',
-                    desc: 'Connected workflows, grounded AI, reliable pipelines, and the ongoing tuning that keeps systems fast.',
-                },
-                {
-                    id: 'growth', tone: 'growth',
-                    label: 'Creative & Growth',
-                    desc: 'Complementary design, identity, and launch support so strong systems reach market with equal clarity.',
-                },
-            ],
-            items: [
-                {
-                    id: 'azure', cat: 'cloud',
-                    title: 'Azure Cloud Architecture & Migration',
-                    desc: 'Secure, scalable Azure environments planned around your workloads, governance requirements, and operating model — from assessment through migration.',
-                    features: ['Cloud Readiness Assessment', 'Azure Landing Zones', 'Workload Migration', 'Security & Cost Governance'],
-                },
-                {
-                    id: 'devops', cat: 'cloud',
-                    title: 'DevOps, Deployment & Reliability',
-                    desc: 'Production pipelines and operational foundations that make releases predictable, observable, and recoverable.',
-                    features: ['CI/CD Pipelines', 'Containers & Microservices', 'Monitoring & Alerting', 'Backup & Recovery'],
-                },
-                {
-                    id: 'platforms', cat: 'engineering',
-                    title: 'Full-Stack Platforms & Custom Systems',
-                    desc: 'Business-critical web platforms, portals, internal tools, and APIs engineered around real workflows rather than off-the-shelf limitations.',
-                    features: ['Custom Web Platforms', 'Enterprise Portals', 'API Architecture', 'Internal Business Systems'],
-                },
-                {
-                    id: 'mvp', cat: 'engineering',
-                    title: 'MVP & Product Engineering',
-                    desc: 'A disciplined path from product idea to a validated, production-ready release for founders and innovation teams.',
-                    features: ['Product Discovery', 'UX/UI Engineering', 'MVP Development', 'Scale-Up Roadmaps'],
-                },
-                {
-                    id: 'automation', cat: 'intelligence',
-                    title: 'Workflow Automation & Integration',
-                    desc: 'Connected workflows that remove repetitive work and move information reliably between your teams, tools, and customers.',
-                    features: ['n8n Orchestration', 'System Connectors', 'Approval Workflows', 'API & Webhook Integration'],
-                },
-                {
-                    id: 'data', cat: 'intelligence',
-                    title: 'Data Analytics & Business Intelligence',
-                    desc: 'Reliable data pipelines and decision-ready dashboards that turn fragmented operational data into a shared source of truth.',
-                    features: ['Data Pipelines', 'Executive Dashboards', 'Reporting Automation', 'Data Quality Models'],
-                },
-                {
-                    id: 'ai', cat: 'intelligence',
-                    title: 'Applied AI & Retrieval Systems',
-                    desc: 'Assistants and document intelligence grounded in your own sources. Answers carry citations, your data stays inside your Azure tenancy, and every output is evaluated against a test set before it ships.',
-                    features: ['Bilingual Arabic/English RAG', 'Document Intelligence & Extraction', 'Model Adaptation & Fine-Tuning', 'Grounding, Evaluation & Guardrails'],
-                },
-                {
-                    id: 'optimization', cat: 'intelligence',
-                    title: 'Maintenance & Performance Optimization',
-                    desc: 'Targeted modernization for systems held back by slow APIs, fragile code, database bottlenecks, or rising infrastructure cost.',
-                    features: ['Legacy Refactoring', 'API Optimization', 'Database Tuning', 'Technical Audits'],
-                },
-                {
-                    id: 'creative', cat: 'growth',
-                    title: 'Product Design, Brand & Digital Growth',
-                    desc: 'Complementary product experience, identity, and growth support that helps technically strong solutions launch with equal clarity.',
-                    features: ['UX/UI & Product Design', 'Brand Identity', 'Launch Systems', 'Focused Digital Campaigns'],
-                },
-            ],
+            moreLabel: 'Full capability detail',
             faqs: {
                 label: 'FAQ',
                 title: 'Frequently asked\nquestions.',
@@ -128,95 +52,18 @@
         },
         ar: {
             eyebrow: 'قدرات نيوترونيكس',
-            title: 'قدراتنا\nالتقنية.',
+            title: 'قدراتنا التقنية.',
             subtitle: 'حلول هندسية لأنظمة يجب أن تعمل وتتكامل وتتوسع بثقة.',
             desc: 'استعن بقدرة متخصصة واحدة أو اجمع التخصصات تحت مسؤولية شريك تقني واحد في قطر.',
             facts: [
-                { id: 'count', v: '09', l: 'قدرة متخصصة' },
-                { id: 'groups', v: '04', l: 'فئات التنفيذ' },
+                { id: 'count', l: 'قدرة متخصصة' },
+                { id: 'groups', l: 'فئات التنفيذ' },
                 { id: 'cloud', v: 'Azure', l: 'الأساس السحابي' },
                 { id: 'base', v: 'الدوحة', l: 'مقر الهندسة' },
             ],
             navLabel: 'انتقل إلى فئة',
             deliverLabel: 'ما الذي نقوم به',
-            categories: [
-                {
-                    id: 'cloud', tone: 'cloud',
-                    label: 'السحابة والبنية التحتية',
-                    desc: 'بيئات Azure والأسس التشغيلية التي تبقيها آمنة وقابلة للمراقبة ومحسّنة التكلفة.',
-                },
-                {
-                    id: 'engineering', tone: 'engineering',
-                    label: 'الهندسة المخصصة والشركات الناشئة',
-                    desc: 'منصات وبوابات ومنتجات مصممة حول سير العمل الحقيقي بدلاً من قيود الحلول الجاهزة.',
-                },
-                {
-                    id: 'intelligence', tone: 'data',
-                    label: 'البيانات والأتمتة الذكية',
-                    desc: 'سير عمل مترابط وذكاء اصطناعي موثّق وخطوط بيانات موثوقة وتحسين مستمر يبقي الأنظمة سريعة.',
-                },
-                {
-                    id: 'growth', tone: 'growth',
-                    label: 'الإبداع والنمو',
-                    desc: 'دعم مكمل في التصميم والهوية والإطلاق ليصل النظام القوي إلى السوق بالوضوح نفسه.',
-                },
-            ],
-            items: [
-                {
-                    id: 'azure', cat: 'cloud',
-                    title: 'هندسة Azure والترحيل السحابي',
-                    desc: 'بيئات Azure آمنة وقابلة للتوسع مبنية حول أحمال العمل ومتطلبات الحوكمة ونموذج التشغيل، من التقييم حتى الترحيل.',
-                    features: ['تقييم الجاهزية السحابية', 'Azure Landing Zones', 'ترحيل أحمال العمل', 'حوكمة الأمان والتكلفة'],
-                },
-                {
-                    id: 'devops', cat: 'cloud',
-                    title: 'DevOps والنشر والموثوقية',
-                    desc: 'خطوط إنتاج وأسس تشغيلية تجعل الإصدارات قابلة للتوقع والمراقبة والاستعادة.',
-                    features: ['خطوط CI/CD', 'الحاويات والخدمات المصغرة', 'المراقبة والتنبيهات', 'النسخ الاحتياطي والاستعادة'],
-                },
-                {
-                    id: 'platforms', cat: 'engineering',
-                    title: 'المنصات المتكاملة والأنظمة المخصصة',
-                    desc: 'منصات أعمال وبوابات وأدوات داخلية وواجهات برمجية مصممة حول سير العمل الحقيقي بدلاً من قيود الحلول الجاهزة.',
-                    features: ['منصات ويب مخصصة', 'بوابات المؤسسات', 'هندسة الواجهات البرمجية', 'أنظمة الأعمال الداخلية'],
-                },
-                {
-                    id: 'mvp', cat: 'engineering',
-                    title: 'هندسة المنتجات والنماذج الأولية',
-                    desc: 'مسار منضبط من فكرة المنتج إلى إصدار مُثبت وجاهز للإنتاج للمؤسسين وفرق الابتكار.',
-                    features: ['اكتشاف المنتج', 'هندسة UX/UI', 'تطوير MVP', 'خطط التوسع'],
-                },
-                {
-                    id: 'automation', cat: 'intelligence',
-                    title: 'أتمتة سير العمل والتكامل',
-                    desc: 'سير عمل مترابط يلغي المهام المتكررة وينقل المعلومات بموثوقية بين الفرق والأدوات والعملاء.',
-                    features: ['تنسيق n8n', 'موصلات الأنظمة', 'مسارات الموافقات', 'تكامل API وWebhooks'],
-                },
-                {
-                    id: 'data', cat: 'intelligence',
-                    title: 'تحليلات البيانات وذكاء الأعمال',
-                    desc: 'خطوط بيانات موثوقة ولوحات قرار تحوّل البيانات التشغيلية المتفرقة إلى مصدر موحد للحقيقة.',
-                    features: ['خطوط البيانات', 'لوحات الإدارة', 'أتمتة التقارير', 'نماذج جودة البيانات'],
-                },
-                {
-                    id: 'ai', cat: 'intelligence',
-                    title: 'الذكاء الاصطناعي التطبيقي وأنظمة الاسترجاع',
-                    desc: 'مساعدون واستخراج ذكي للمستندات يستندون إلى مصادرك الخاصة. الإجابات مرفقة بالمراجع، وبياناتك تبقى داخل بيئة Azure الخاصة بك، وكل مخرَج يُقيَّم قبل الإطلاق.',
-                    features: ['استرجاع ثنائي اللغة عربي/إنجليزي', 'ذكاء واستخراج المستندات', 'تكييف النماذج والضبط الدقيق', 'التوثيق والتقييم وضوابط الأمان'],
-                },
-                {
-                    id: 'optimization', cat: 'intelligence',
-                    title: 'الصيانة وتحسين الأداء',
-                    desc: 'تحديث موجه للأنظمة المتأثرة ببطء الواجهات أو هشاشة الشفرة أو اختناقات قواعد البيانات أو ارتفاع تكلفة البنية.',
-                    features: ['تحديث الأنظمة القديمة', 'تحسين API', 'ضبط قواعد البيانات', 'التدقيق التقني'],
-                },
-                {
-                    id: 'creative', cat: 'growth',
-                    title: 'تصميم المنتج والهوية والنمو الرقمي',
-                    desc: 'خدمات مكملة في تجربة المنتج والهوية والنمو تساعد الحلول التقنية القوية على الانطلاق بوضوح مماثل.',
-                    features: ['تصميم UX/UI والمنتج', 'الهوية التجارية', 'أنظمة الإطلاق', 'حملات رقمية مركزة'],
-                },
-            ],
+            moreLabel: 'تفاصيل القدرة كاملة',
             faqs: {
                 label: 'الأسئلة الشائعة',
                 title: 'أسئلة\nمتكررة.',
@@ -251,11 +98,16 @@
     let isAR   = $derived(locale === 'ar')
     let c      = $derived(isAR ? content.ar : content.en)
 
-    let groups = $derived(
-        c.categories.map((category) => ({
-            ...category,
-            items: c.items.filter((item) => item.cat === category.id),
-        })),
+    // Capabilities and categories both come from the shared catalog, so this
+    // page never needs editing when one is added.
+    let groups = $derived(getServiceGroups(isAR ? 'ar' : 'en'))
+
+    let facts = $derived(
+        c.facts.map((fact) => {
+            if (fact.id === 'count') return { ...fact, v: String(getServices().length).padStart(2, '0') }
+            if (fact.id === 'groups') return { ...fact, v: String(groups.length).padStart(2, '0') }
+            return fact
+        }),
     )
 
     let activeCategory = $state('cloud')
@@ -303,7 +155,7 @@
             <!-- Cell contents, not the cells: staggering the cells themselves
                  would flash the 1px grid rules through the gaps. -->
             <dl class="facts" {@attach staggerIn({ selector: '.fact > *', y: 12, stagger: 0.05, start: 'top 95%' })}>
-                {#each c.facts as fact (fact.id)}
+                {#each facts as fact (fact.id)}
                     <div class="fact">
                         <dt class="fact-v">{fact.v}</dt>
                         <dd class="fact-l">{fact.l}</dd>
@@ -316,7 +168,7 @@
     <!-- ── STICKY CATEGORY NAV ── -->
     <nav class="cat-nav" aria-label={c.navLabel}>
         <div class="wrap cat-row">
-            {#each c.categories as category (category.id)}
+            {#each groups as category (category.id)}
                 <a
                     href={'#' + category.id}
                     class="cat-link"
@@ -356,15 +208,20 @@
                         <div class="svc-list">
                             {#each group.items as item (item.id)}
                                 <article class="svc" {@attach reveal()}>
-                                    <h3 class="svc-title">{item.title}</h3>
+                                    <h3 class="svc-title">
+                                        <Link href={item.href} class="svc-title-link">{item.title}</Link>
+                                    </h3>
                                     <div class="svc-detail">
-                                        <p class="svc-desc">{item.desc}</p>
+                                        <p class="svc-desc">{item.summary}</p>
                                         <p class="svc-deliver">{c.deliverLabel}</p>
                                         <ul class="svc-features">
                                             {#each item.features as feature (feature)}
                                                 <li class="svc-feature">{feature}</li>
                                             {/each}
                                         </ul>
+                                        <Link href={item.href} class="svc-more">
+                                            {c.moreLabel} <span aria-hidden="true">{isAR ? '←' : '→'}</span>
+                                        </Link>
                                     </div>
                                 </article>
                             {/each}
@@ -429,7 +286,7 @@
                 {/each}
             </h2>
             <p class="cta-sub">{c.cta.sub}</p>
-            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary cta-btn">{c.cta.btn} →</Link>
+            <Link href={isAR ? '/ar/book-a-consultation' : '/book-a-consultation'} class="btn-primary cta-btn">{c.cta.btn} <span aria-hidden="true">{isAR ? '←' : '→'}</span></Link>
         </div>
     </section>
 </PublicLayout>
@@ -685,6 +542,24 @@
     margin: 0;
 }
 :global([dir="rtl"]) .svc-title { letter-spacing: 0; line-height: 1.45; }
+:global(.svc-title-link) {
+    color: inherit;
+    transition: color 200ms;
+}
+:global(.svc-title-link:hover) { color: var(--tone); }
+:global(.svc-more) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-ember);
+    transition: gap 200ms;
+}
+:global(.svc-more:hover) { gap: 0.7rem; }
+:global([dir="rtl"]) :global(.svc-more) { font-family: var(--font-arabic); letter-spacing: 0; }
 .svc-detail { min-width: 0; }
 .svc-desc {
     font-size: 1rem;
@@ -839,7 +714,10 @@
     flex-direction: column;
     align-items: flex-start;
 }
-:global([dir="rtl"]) .cta-body { align-items: flex-end; text-align: right; }
+:global([dir="rtl"]) .cta-body {
+    align-items: center;
+    text-align: center;
+}
 .cta-label { color: var(--color-ember); }
 .cta-title {
     font-size: clamp(2rem, 4.6vw, 3.75rem);
@@ -849,7 +727,7 @@
     color: var(--color-ink);
     margin: 0.25rem 0 1rem;
 }
-:global([dir="rtl"]) .cta-title { letter-spacing: 0; line-height: 1.25; }
+:global([dir="rtl"]) .cta-title { letter-spacing: 0; line-height: 1.25; text-align: center; }
 .cta-sub {
     color: var(--color-muted);
     font-size: 1.0625rem;
@@ -857,7 +735,7 @@
     max-width: 50ch;
     margin: 0 0 2rem;
 }
-:global([dir="rtl"]) .cta-sub { font-family: var(--font-arabic); max-width: 42ch; }
+:global([dir="rtl"]) .cta-sub { font-family: var(--font-arabic); max-width: 44ch; text-align: center; }
 
 @media (prefers-reduced-motion: reduce) {
     .faq-panel,
