@@ -4,6 +4,7 @@
     import { reveal } from '../lib/reveal.js'
     import { maskedLines, staggerIn, toLines } from '../lib/motion.js'
     import { toast } from '../lib/toast.js'
+    import { getServices } from '../lib/services.js'
 
     let { storeUrl = '/book-a-consultation' } = $props()
 
@@ -23,17 +24,7 @@
                 company: 'Company or brand',
                 optional: 'Optional',
                 service: 'Primary capability needed',
-                services: [
-                    { id: 'cloud',      label: 'Cloud & Infrastructure' },
-                    { id: 'software',   label: 'Custom Software & Platforms' },
-                    { id: 'startup',    label: 'MVP & Startup Engineering' },
-                    { id: 'automation', label: 'Automation & Integration' },
-                    { id: 'ai',         label: 'Applied AI & Retrieval Systems' },
-                    { id: 'data',       label: 'Data & Business Intelligence' },
-                    { id: 'optimize',   label: 'Maintenance & Optimization' },
-                    { id: 'creative',   label: 'Creative & Growth' },
-                    { id: 'other',      label: 'Other / Multi-discipline' },
-                ],
+                otherService: 'Other / Multi-discipline',
                 message: 'Challenge, scope & target milestones',
                 messageHint: 'The more context you give, the more useful our first reply will be.',
                 submit: 'Request Technical Consultation',
@@ -74,17 +65,7 @@
                 company: 'الشركة أو العلامة التجارية',
                 optional: 'اختياري',
                 service: 'القدرة الأساسية المطلوبة',
-                services: [
-                    { id: 'cloud',      label: 'السحابة والبنية التحتية' },
-                    { id: 'software',   label: 'البرمجيات والمنصات المخصصة' },
-                    { id: 'startup',    label: 'هندسة المنتجات والشركات الناشئة' },
-                    { id: 'automation', label: 'الأتمتة والتكامل' },
-                    { id: 'ai',         label: 'الذكاء الاصطناعي التطبيقي وأنظمة الاسترجاع' },
-                    { id: 'data',       label: 'البيانات وذكاء الأعمال' },
-                    { id: 'optimize',   label: 'الصيانة وتحسين الأداء' },
-                    { id: 'creative',   label: 'الإبداع والنمو' },
-                    { id: 'other',      label: 'أخرى / تخصصات متعددة' },
-                ],
+                otherService: 'أخرى / تخصصات متعددة',
                 message: 'التحدي والنطاق والمراحل المستهدفة',
                 messageHint: 'كلما زاد السياق الذي تشاركه، كان ردنا الأول أكثر فائدة.',
                 submit: 'اطلب استشارة تقنية',
@@ -117,6 +98,10 @@
     let locale = $derived(page.props.locale)
     let isAR   = $derived(locale === 'ar')
     let c      = $derived(isAR ? content.ar : content.en)
+    let serviceOptions = $derived([
+        ...getServices(isAR ? 'ar' : 'en').map((service) => ({ id: service.inquiryValue, label: service.title })),
+        { id: 'other', label: c.form.otherService },
+    ])
 
     let form = useForm('post', () => storeUrl, {
         name: '',
@@ -183,7 +168,7 @@
                                     class="f-control" class:has-error={form.errors.name}
                                     type="text" id="name" name="name" autocomplete="name"
                                     required minlength="2" maxlength="100"
-                                    pattern="^[\p{L}\s]+$"
+                                    pattern={'^[\\p{L}\\s]+$'}
                                     bind:value={form.name}
                                     onblur={() => validate('name')}
                                     aria-invalid={Boolean(form.errors.name)}
@@ -252,7 +237,7 @@
                                 aria-invalid={Boolean(form.errors.service)}
                                 aria-describedby={form.errors.service ? 'service-error' : undefined}
                             >
-                                {#each c.form.services as option (option.id)}
+                                {#each serviceOptions as option (option.id)}
                                     <option value={option.id}>{option.label}</option>
                                 {/each}
                             </select>

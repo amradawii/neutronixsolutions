@@ -1,11 +1,10 @@
-import { media } from './media.js'
 
 /**
- * Single source of truth for capabilities across the home carousel, the
+ * Single source of truth for capabilities across the home grid, the
  * /services overview, the detail pages, and the footer.
  *
  * Mirrors the shape of projects.js: slug-keyed catalog, bilingual bodies,
- * locale-independent fields (category, stack, image) hoisted to the entry root.
+ * locale-independent fields (category, stack) hoisted to the entry root.
  * Anything derivable is derived — a service's tone, colour, and category label
  * come from its category, and its feature chips are the deliverable titles —
  * so adding a capability means editing one entry here and nothing else.
@@ -29,6 +28,19 @@ const TONE_HEX = {
  * page eyebrow; `short` is the condensed form used on space-constrained cards.
  */
 const categories = {
+    engineering: {
+        tone: 'engineering',
+        en: {
+            label: 'Web & Software',
+            short: 'Web & Software',
+            desc: 'Websites, online stores, custom platforms, and product engineering — built to launch, perform, and grow.',
+        },
+        ar: {
+            label: 'الويب والبرمجيات',
+            short: 'الويب والبرمجيات',
+            desc: 'مواقع ومتاجر إلكترونية ومنصات مخصصة وهندسة منتجات، مبنية للإطلاق والأداء والنمو.',
+        },
+    },
     cloud: {
         tone: 'cloud',
         en: {
@@ -42,53 +54,40 @@ const categories = {
             desc: 'بيئات Azure والأسس التشغيلية التي تبقيها آمنة وقابلة للمراقبة ومحسّنة التكلفة.',
         },
     },
-    engineering: {
-        tone: 'engineering',
-        en: {
-            label: 'Custom Engineering & Startups',
-            short: 'Custom Engineering',
-            desc: 'Platforms, portals, and products engineered around real workflows instead of off-the-shelf limits.',
-        },
-        ar: {
-            label: 'الهندسة المخصصة والشركات الناشئة',
-            short: 'الهندسة المخصصة',
-            desc: 'منصات وبوابات ومنتجات مصممة حول سير العمل الحقيقي بدلاً من قيود الحلول الجاهزة.',
-        },
-    },
     intelligence: {
         tone: 'data',
         en: {
-            label: 'Data & Intelligent Automation',
-            short: 'Data & Automation',
-            desc: 'Connected workflows, grounded AI, reliable pipelines, and the ongoing tuning that keeps systems fast.',
+            label: 'AI, Data & Automation',
+            short: 'AI, Data & Automation',
+            desc: 'AI-powered applications, connected workflows, and reliable data that help your teams make better decisions.',
         },
         ar: {
-            label: 'البيانات والأتمتة الذكية',
-            short: 'البيانات والأتمتة',
-            desc: 'سير عمل مترابط وذكاء اصطناعي موثّق وخطوط بيانات موثوقة وتحسين مستمر يبقي الأنظمة سريعة.',
+            label: 'الذكاء الاصطناعي والبيانات والأتمتة',
+            short: 'الذكاء الاصطناعي والبيانات والأتمتة',
+            desc: 'تطبيقات مدعومة بالذكاء الاصطناعي وسير عمل مترابط وبيانات موثوقة تساعد فرقكم على اتخاذ قرارات أفضل.',
         },
     },
     growth: {
         tone: 'growth',
         en: {
-            label: 'Creative & Growth',
-            short: 'Creative & Growth',
-            desc: 'Complementary design, identity, and launch support so strong systems reach market with equal clarity.',
+            label: 'Design & Growth',
+            short: 'Design & Growth',
+            desc: 'Product design, brand identity, and search visibility that help people discover, trust, and choose your business.',
         },
         ar: {
-            label: 'الإبداع والنمو',
-            short: 'الإبداع والنمو',
-            desc: 'دعم مكمل في التصميم والهوية والإطلاق ليصل النظام القوي إلى السوق بالوضوح نفسه.',
+            label: 'التصميم والنمو',
+            short: 'التصميم والنمو',
+            desc: 'تصميم منتجات وهوية تجارية وظهور في البحث تساعد العملاء على اكتشاف نشاطكم والثقة به واختياره.',
         },
     },
 }
 
-/** @type {Record<string, { id: string, cat: string, stack: string[], image: string, en: object, ar: object }>} */
+/** @type {Record<string, { id: string, inquiryValue?: string, cat: string, stack: string[], en: object, ar: object }>} */
 const catalog = {
     'azure-cloud-migration': {
         id: 'azure',
+        inquiryValue: 'cloud',
         cat: 'cloud',
-        image: media.services.azure,
         stack: ['Microsoft Azure', 'Azure Landing Zones', 'Entra ID', 'Bicep / Terraform', 'Azure Monitor', 'Microsoft Defender for Cloud'],
         en: {
             title: 'Azure Cloud Architecture & Migration',
@@ -167,7 +166,6 @@ const catalog = {
     'devops-and-reliability': {
         id: 'devops',
         cat: 'cloud',
-        image: media.services.devops,
         stack: ['Azure DevOps', 'GitHub Actions', 'Docker', 'Kubernetes', 'Terraform', 'Azure Monitor', 'Grafana'],
         en: {
             title: 'DevOps, Deployment & Reliability',
@@ -246,7 +244,6 @@ const catalog = {
     'observability-and-sre': {
         id: 'observability',
         cat: 'cloud',
-        image: media.services.observability,
         stack: ['Azure Monitor & Log Analytics', 'Application Insights', 'OpenTelemetry', 'ClickHouse / Self-hosted PostHog', 'Grafana', 'n8n'],
         en: {
             title: 'Proactive Observability & Site Reliability (SRE)',
@@ -326,8 +323,8 @@ const catalog = {
 
     'custom-software-platforms': {
         id: 'platforms',
+        inquiryValue: 'software',
         cat: 'engineering',
-        image: media.services.platforms,
         stack: ['Laravel', 'Svelte', 'PostgreSQL', 'Redis', 'REST & Webhooks', 'Azure App Service'],
         en: {
             title: 'Full-Stack Platforms & Custom Systems',
@@ -405,8 +402,8 @@ const catalog = {
 
     'mvp-product-engineering': {
         id: 'mvp',
+        inquiryValue: 'startup',
         cat: 'engineering',
-        image: media.services.mvp,
         stack: ['Laravel', 'Svelte', 'PostgreSQL', 'Figma', 'Azure', 'Stripe / Payment Gateways'],
         en: {
             title: 'MVP & Product Engineering',
@@ -485,7 +482,6 @@ const catalog = {
     'workflow-automation': {
         id: 'automation',
         cat: 'intelligence',
-        image: media.services.automation,
         stack: ['n8n', 'Azure Logic Apps', 'REST APIs', 'Webhooks', 'Microsoft 365', 'Azure Functions'],
         en: {
             title: 'Workflow Automation & Integration',
@@ -564,7 +560,6 @@ const catalog = {
     'data-analytics-business-intelligence': {
         id: 'data',
         cat: 'intelligence',
-        image: media.services.data,
         stack: ['Azure Data Factory', 'Azure SQL', 'Power BI', 'Azure Synapse', 'dbt', 'Python'],
         en: {
             title: 'Data Analytics & Business Intelligence',
@@ -643,86 +638,85 @@ const catalog = {
     'applied-ai-solutions': {
         id: 'ai',
         cat: 'intelligence',
-        image: media.services.ai,
-        stack: ['Azure OpenAI', 'Azure AI Search', 'Document Intelligence', 'Vector Databases', 'Python', 'Evaluation Harnesses'],
+        stack: ['Laravel / Svelte', 'Azure OpenAI', 'Azure AI Search', 'Document Intelligence', 'Python', 'Evaluation Harnesses'],
         en: {
-            title: 'Applied AI & Retrieval Systems',
-            short: 'Applied AI',
-            summary: 'Assistants and document intelligence grounded in your own sources — cited answers in Arabic and English, evaluated before release, inside your own Azure tenancy.',
+            title: 'AI-Powered Software & Solutions',
+            short: 'AI Solutions',
+            summary: 'Useful AI inside your applications — from grounded assistants and intelligent search to document processing, with evaluation and human controls built in.',
             overview: [
-                'A general-purpose chatbot pointed at your business will produce confident answers that are wrong, and the first time that happens in front of a client it costs more than the project saved. The engineering that separates a demo from a deployable system is retrieval, grounding, and evaluation.',
-                'We build assistants that answer only from your approved sources and cite the document and section behind every claim, so a reader can verify rather than trust. Everything runs on Azure OpenAI within your own tenancy — your documents are not used to train anyone else\'s model — and each release is scored against a test set of real questions with known correct answers before it goes live.',
+                'AI should improve a specific task, not become a feature added for its own sake. We identify where intelligent search, assisted drafting, classification, or document processing can help your users, then build those capabilities into the software they already use or a new application designed around the workflow.',
+                'Our existing retrieval and document intelligence work remains part of this service. Knowledge assistants use approved sources and show citations; document extraction includes confidence scoring and review. We integrate authentication, access controls, monitoring, and human approval where actions carry consequences, and evaluate quality before release.',
             ],
             outcomes: [
-                'Answers traceable to a cited source document and section',
-                'Bilingual Arabic and English retrieval over the same corpus',
-                'Documents and prompts contained within your Azure tenancy',
-                'Measured accuracy against a real test set instead of impressions from a demo',
+                'AI features integrated into a working product rather than a separate demo',
+                'Bilingual assistants and search grounded in approved business sources',
+                'Access controls and data handling designed around your governance requirements',
+                'Measured quality with review and fallback paths when the model is uncertain',
             ],
             deliverables: [
-                { t: 'Bilingual Arabic/English RAG', d: 'Retrieval-augmented assistants that handle Arabic and English queries across the same document set, with citations on every answer.' },
-                { t: 'Document Intelligence & Extraction', d: 'Structured data extracted from contracts, invoices, and forms — including scanned Arabic documents — with confidence scoring and human review for low-confidence cases.' },
-                { t: 'Model Adaptation & Fine-Tuning', d: 'Prompt engineering and, where it is genuinely justified, fine-tuning on your domain language and output formats.' },
-                { t: 'Grounding, Evaluation & Guardrails', d: 'A regression test set, accuracy scoring per release, refusal behaviour for out-of-scope questions, and content filtering.' },
+                { t: 'AI-Powered Application Features', d: 'Assistants, intelligent search, assisted drafting, and classification integrated with your application, permissions, and existing APIs.' },
+                { t: 'Bilingual Retrieval & RAG', d: 'Arabic and English knowledge assistants over approved documents, with source citations and permission-aware retrieval.' },
+                { t: 'Document Intelligence', d: 'Structured extraction from contracts, invoices, and forms, with confidence scoring and human review for uncertain results.' },
+                { t: 'Evaluation & Guardrails', d: 'Task-specific test sets, output checks, usage monitoring, and human approval for sensitive actions.' },
             ],
             process: [
-                { t: 'Scope the corpus', d: 'We identify which documents are authoritative, how they are updated, and which questions the system must answer correctly to be useful.' },
-                { t: 'Build retrieval', d: 'Ingestion, chunking, and indexing tuned for your content and for both Arabic and English query behaviour.' },
-                { t: 'Evaluate', d: 'A test set of real questions with verified answers scores each version. We report accuracy honestly, including where it falls short.' },
-                { t: 'Deploy with guardrails', d: 'Release with citation display, refusal on out-of-scope queries, usage logging, and a review loop for flagged answers.' },
+                { t: 'Choose the task', d: 'Define the user workflow, authoritative data, acceptable errors, and a measurable success criterion before choosing a model.' },
+                { t: 'Build & integrate', d: 'Implement the interface, retrieval or processing pipeline, permissions, and application integrations around the chosen task.' },
+                { t: 'Evaluate', d: 'Test with representative Arabic and English cases and report quality, latency, cost, and known limitations.' },
+                { t: 'Release & improve', d: 'Deploy with monitoring, review paths, and feedback that informs subsequent releases.' },
             ],
             faqs: [
-                { q: 'Will our documents be used to train a public model?', a: 'No. Azure OpenAI within your tenancy does not use your prompts or documents to train the underlying models. Your content stays in your subscription and under your access controls.' },
-                { q: 'How accurate is it, really?', a: 'That depends on the corpus and the questions, which is exactly why we build an evaluation set before promising a number. You get a measured accuracy figure for your own content, and an honest account of the question types where it underperforms.' },
-                { q: 'How well does it handle Arabic?', a: 'Arabic retrieval needs specific attention — normalization, diacritics, and mixed Arabic-English documents all affect results. We test Arabic queries as a first-class case rather than assuming English performance carries over.' },
+                { q: 'Can you add AI to software we already have?', a: 'Yes. We review the existing application and APIs, then add focused capabilities without assuming the whole product needs to be rebuilt.' },
+                { q: 'Does this include RAG and document intelligence?', a: 'Yes. These are part of the same AI service, not separate overlapping engagements. We choose retrieval, extraction, or other model capabilities according to the task.' },
+                { q: 'Can AI results be guaranteed correct?', a: 'No. We evaluate against your own test cases, make limitations visible, and use citations, deterministic checks, and human review where needed. Arabic is tested as a first-class case.' },
             ],
             meta: {
-                title: 'Applied AI & RAG Systems on Azure OpenAI in Qatar',
-                description: 'Bilingual Arabic and English RAG assistants, document intelligence, and evaluated AI systems built in your own Azure tenancy for organizations in Qatar.',
+                title: 'AI-Powered Software, RAG & Application Integration in Qatar',
+                description: 'AI-powered application features, bilingual assistants, intelligent search, and document processing for organizations in Qatar. Evaluated and integrated with your workflows.',
             },
         },
         ar: {
-            title: 'الذكاء الاصطناعي التطبيقي وأنظمة الاسترجاع',
-            short: 'الذكاء الاصطناعي',
-            summary: 'مساعدون واستخراج ذكي للمستندات يستندون إلى مصادرك — إجابات موثّقة بالعربية والإنجليزية، مُقيَّمة قبل الإطلاق، داخل بيئة Azure الخاصة بك.',
+            title: 'برمجيات وحلول مدعومة بالذكاء الاصطناعي',
+            short: 'حلول الذكاء الاصطناعي',
+            summary: 'ذكاء اصطناعي مفيد داخل تطبيقاتكم، من المساعدين والبحث الذكي إلى معالجة المستندات، مع تقييم الجودة وضوابط المراجعة البشرية.',
             overview: [
-                'روبوت محادثة عام موجَّه إلى بيانات عملكم سينتج إجابات واثقة وخاطئة، وأول مرة يحدث ذلك أمام عميل ستتجاوز كلفتها ما وفّره المشروع. والهندسة التي تفصل العرض التوضيحي عن نظام قابل للنشر هي الاسترجاع والتوثيق والتقييم.',
-                'نبني مساعدين يجيبون من مصادركم المعتمدة حصراً ويستشهدون بالمستند والقسم خلف كل ادعاء، ليتحقق القارئ بدل أن يثق. ويعمل كل ذلك على Azure OpenAI داخل بيئتكم الخاصة، فلا تُستخدم مستنداتكم لتدريب نموذج أحد آخر، ويُقيَّم كل إصدار مقابل مجموعة اختبار من أسئلة حقيقية بإجابات معروفة قبل إطلاقه.',
+                'ينبغي أن يحسن الذكاء الاصطناعي مهمة محددة، لا أن يكون إضافة لمجرد مواكبة الاتجاه. نحدد كيف يمكن للبحث الذكي أو المساعدة في الصياغة أو التصنيف أو معالجة المستندات أن تخدم المستخدمين، ثم ندمجها في برامجهم الحالية أو تطبيق جديد مبني حول سير العمل.',
+                'تبقى خدمات الاسترجاع وذكاء المستندات جزءاً من هذه الخدمة. يستند المساعدون إلى مصادر معتمدة ويعرضون المراجع، ويتضمن استخراج المستندات درجات ثقة ومراجعة. ندمج المصادقة والصلاحيات والمراقبة والموافقة البشرية على الإجراءات الحساسة، ونقيّم الجودة قبل الإطلاق.',
             ],
             outcomes: [
-                'إجابات يمكن تتبعها إلى مستند وقسم مُستشهد به',
-                'استرجاع ثنائي اللغة بالعربية والإنجليزية على المجموعة نفسها',
-                'بقاء المستندات والتوجيهات داخل بيئة Azure الخاصة بكم',
-                'دقة مقيسة مقابل مجموعة اختبار حقيقية بدل انطباعات عرض توضيحي',
+                'ميزات ذكاء اصطناعي داخل منتج عامل لا عرض توضيحي منفصل',
+                'مساعدون وبحث ثنائي اللغة يستندان إلى مصادر أعمال معتمدة',
+                'صلاحيات ومعالجة بيانات مصممة وفق متطلبات الحوكمة',
+                'جودة مقيسة ومسارات مراجعة وبدائل عند عدم يقين النموذج',
             ],
             deliverables: [
-                { t: 'استرجاع ثنائي اللغة عربي/إنجليزي', d: 'مساعدون معززون بالاسترجاع يتعاملون مع الاستفسارات العربية والإنجليزية على مجموعة المستندات نفسها، مع مراجع في كل إجابة.' },
-                { t: 'ذكاء واستخراج المستندات', d: 'استخراج بيانات منظمة من العقود والفواتير والنماذج، بما فيها المستندات العربية الممسوحة ضوئياً، مع درجة ثقة ومراجعة بشرية للحالات منخفضة الثقة.' },
-                { t: 'تكييف النماذج والضبط الدقيق', d: 'هندسة التوجيهات، والضبط الدقيق حين يكون مبرراً فعلاً، على لغة مجالكم وصيغ المخرجات المطلوبة.' },
-                { t: 'التوثيق والتقييم وضوابط الأمان', d: 'مجموعة اختبار انحدار وقياس دقة لكل إصدار وسلوك رفض للأسئلة خارج النطاق وتصفية للمحتوى.' },
+                { t: 'ميزات تطبيقات مدعومة بالذكاء الاصطناعي', d: 'مساعدون وبحث ذكي ومساعدة في الصياغة وتصنيف، مدمجة مع التطبيق والصلاحيات والواجهات البرمجية الحالية.' },
+                { t: 'الاسترجاع وRAG ثنائي اللغة', d: 'مساعدون بالعربية والإنجليزية يعملون على مستندات معتمدة، مع عرض المراجع واسترجاع يراعي صلاحيات المستخدم.' },
+                { t: 'ذكاء المستندات', d: 'استخراج منظم من العقود والفواتير والنماذج مع درجات ثقة ومراجعة بشرية للنتائج غير المؤكدة.' },
+                { t: 'التقييم وضوابط الأمان', d: 'مجموعات اختبار خاصة بالمهمة وفحوص للمخرجات ومراقبة الاستخدام وموافقة بشرية على الإجراءات الحساسة.' },
             ],
             process: [
-                { t: 'تحديد المجموعة', d: 'نحدد المستندات المرجعية وطريقة تحديثها والأسئلة التي يجب أن يجيب عنها النظام بصحة ليكون مفيداً.' },
-                { t: 'بناء الاسترجاع', d: 'الاستيعاب والتقطيع والفهرسة مضبوطة على محتواكم وعلى سلوك الاستفسار بالعربية والإنجليزية معاً.' },
-                { t: 'التقييم', d: 'مجموعة اختبار من أسئلة حقيقية بإجابات موثقة تقيس كل نسخة. ونعرض الدقة بصدق بما في ذلك مواطن القصور.' },
-                { t: 'النشر مع الضوابط', d: 'إطلاق مع عرض المراجع ورفض الأسئلة خارج النطاق وتسجيل الاستخدام وحلقة مراجعة للإجابات المُعلَّمة.' },
+                { t: 'اختيار المهمة', d: 'نحدد سير العمل والبيانات المرجعية والأخطاء المقبولة ومعيار نجاح قابل للقياس قبل اختيار النموذج.' },
+                { t: 'البناء والتكامل', d: 'ننفذ الواجهة وخط الاسترجاع أو المعالجة والصلاحيات والتكاملات حول المهمة المختارة.' },
+                { t: 'التقييم', d: 'نختبر حالات ممثلة بالعربية والإنجليزية ونوضح الجودة والسرعة والتكلفة والقيود المعروفة.' },
+                { t: 'الإطلاق والتحسين', d: 'ننشر مع المراقبة ومسارات المراجعة والتغذية الراجعة التي توجه الإصدارات التالية.' },
             ],
             faqs: [
-                { q: 'هل ستُستخدم مستنداتنا لتدريب نموذج عام؟', a: 'لا. لا يستخدم Azure OpenAI داخل بيئتكم توجيهاتكم أو مستنداتكم لتدريب النماذج الأساسية. يبقى محتواكم ضمن اشتراككم وتحت ضوابط وصولكم.' },
-                { q: 'ما مدى دقته فعلياً؟', a: 'يعتمد ذلك على المجموعة والأسئلة، ولهذا السبب تحديداً نبني مجموعة تقييم قبل الوعد برقم. ستحصلون على قياس دقة لمحتواكم أنتم، وعرض صريح لأنواع الأسئلة التي يضعف فيها الأداء.' },
-                { q: 'ما مستوى تعامله مع العربية؟', a: 'يحتاج الاسترجاع بالعربية عناية خاصة، فالتطبيع والتشكيل والمستندات المختلطة عربي-إنجليزي كلها تؤثر في النتائج. ونختبر الاستفسارات العربية كحالة أساسية لا بافتراض انتقال أداء الإنجليزية إليها.' },
+                { q: 'هل يمكن إضافة الذكاء الاصطناعي إلى برامجنا الحالية؟', a: 'نعم. نراجع التطبيق والواجهات الحالية ثم نضيف قدرات محددة دون افتراض الحاجة إلى إعادة بناء المنتج بالكامل.' },
+                { q: 'هل تشمل الخدمة RAG وذكاء المستندات؟', a: 'نعم. هما جزء من خدمة الذكاء الاصطناعي نفسها لا خدمات متداخلة منفصلة. نختار الاسترجاع أو الاستخراج أو غيرهما حسب المهمة.' },
+                { q: 'هل يمكن ضمان صحة نتائج الذكاء الاصطناعي؟', a: 'لا. نقيّم حالات الاختبار الخاصة بكم ونوضح القيود، ونستخدم المراجع والفحوص الحتمية والمراجعة البشرية عند الحاجة. ونختبر العربية كحالة أساسية.' },
             ],
             meta: {
-                title: 'الذكاء الاصطناعي التطبيقي وأنظمة RAG على Azure OpenAI في قطر',
-                description: 'مساعدون ثنائيو اللغة بالعربية والإنجليزية وذكاء المستندات وأنظمة ذكاء اصطناعي مُقيَّمة داخل بيئة Azure الخاصة بكم للمؤسسات في قطر.',
+                title: 'برمجيات الذكاء الاصطناعي وRAG وتكامل التطبيقات في قطر',
+                description: 'ميزات تطبيقات مدعومة بالذكاء الاصطناعي ومساعدون ثنائيو اللغة وبحث ذكي ومعالجة مستندات للمؤسسات في قطر، مقيمة ومتكاملة مع سير العمل.',
             },
         },
     },
 
     'performance-optimization': {
         id: 'optimization',
-        cat: 'intelligence',
-        image: media.services.optimization,
+        inquiryValue: 'optimize',
+        cat: 'engineering',
         stack: ['Application Insights', 'PostgreSQL / SQL Server', 'Redis', 'Profilers', 'Load Testing', 'Azure Advisor'],
         en: {
             title: 'Maintenance & Performance Optimization',
@@ -798,10 +792,243 @@ const catalog = {
         },
     },
 
+    'ecommerce-development': {
+        id: 'ecommerce',
+        cat: 'engineering',
+        stack: ['Shopify / WooCommerce / Custom', 'Payment Gateways', 'Inventory Integrations', 'Analytics', 'Laravel / Svelte'],
+        en: {
+            title: 'E-commerce Development',
+            short: 'E-commerce',
+            summary: 'Online stores with clear product discovery, reliable checkout, and connected order operations — built around how your business sells.',
+            overview: [
+                'A store needs more than an attractive product grid. Customers must find the right item, understand delivery and pricing, and complete payment without friction. Your team must then fulfill that order without moving data between spreadsheets. We design the storefront and the operational flow together.',
+                'We choose an established commerce platform when it fits, and custom development when your catalog, pricing, or integrations genuinely require it. This service focuses on selling online: products, checkout, orders, and fulfillment, rather than general-purpose business software.',
+            ],
+            outcomes: [
+                'A responsive storefront that makes products easy to find and compare',
+                'Checkout tested against the chosen payment provider and delivery rules',
+                'Orders and inventory connected to your operational tools',
+                'A store your team can manage with documented processes',
+            ],
+            deliverables: [
+                { t: 'Storefront & Product Catalog', d: 'Responsive product and collection pages, search, variants, and catalog management tailored to your range.' },
+                { t: 'Checkout & Payments', d: 'Payment-provider integration, clear checkout states, and testing for successful, failed, and interrupted transactions.' },
+                { t: 'Orders & Fulfillment', d: 'Order workflows, shipping rules, and inventory or ERP integrations scoped to how your team fulfills purchases.' },
+                { t: 'Launch & Measurement', d: 'Commerce analytics, consent-aware tracking, administrator training, and a tested launch checklist.' },
+            ],
+            process: [
+                { t: 'Plan the store', d: 'Map the catalog, selling regions, payment requirements, fulfillment rules, and platform constraints.' },
+                { t: 'Design the journey', d: 'Prototype product discovery, product pages, cart, and checkout for mobile and desktop shoppers.' },
+                { t: 'Build & connect', d: 'Implement the storefront and connect payments, shipping, inventory, and analytics.' },
+                { t: 'Test & launch', d: 'Validate complete order journeys and operational handover before opening the store to customers.' },
+            ],
+            faqs: [
+                { q: 'Do we need a custom store?', a: 'Not necessarily. An established platform is usually the better starting point. We recommend custom engineering only when the requirements justify its additional ownership and maintenance.' },
+                { q: 'Can the store support Arabic and English?', a: 'Yes. We scope bilingual content and RTL layouts from the outset, including product discovery and checkout where the selected platform supports them.' },
+                { q: 'Can you migrate an existing store?', a: 'Yes. We review products, customer data, order history, URLs, and integrations, then agree a migration and redirect plan with validation before cutover.' },
+            ],
+            meta: {
+                title: 'E-commerce Website & Online Store Development in Qatar',
+                description: 'Responsive online stores, product catalogs, payment integrations, and connected order operations for businesses in Qatar. Platform-led or custom development.',
+            },
+        },
+        ar: {
+            title: 'تطوير المتاجر الإلكترونية',
+            short: 'المتاجر الإلكترونية',
+            summary: 'متاجر إلكترونية باكتشاف واضح للمنتجات ودفع موثوق وإدارة طلبات مترابطة، مبنية حول طريقة بيع نشاطكم.',
+            overview: [
+                'يحتاج المتجر إلى أكثر من عرض جذاب للمنتجات. يجب أن يجد العميل المنتج المناسب ويفهم التوصيل والأسعار ويتم الدفع بسهولة، ثم يتمكن فريقكم من تنفيذ الطلب دون نقل البيانات بين الجداول. نصمم واجهة المتجر وسير العمل التشغيلي معاً.',
+                'نختار منصة تجارة جاهزة عندما تناسب المتطلبات، وتطويراً مخصصاً عندما يبرر الكتالوج أو التسعير أو التكامل ذلك. تركز هذه الخدمة على البيع الإلكتروني: المنتجات والدفع والطلبات والتنفيذ، لا أنظمة الأعمال العامة.',
+            ],
+            outcomes: [
+                'واجهة متجاوبة تسهّل اكتشاف المنتجات ومقارنتها',
+                'مسار دفع مختبر وفق مزوّد الدفع وقواعد التوصيل',
+                'ربط الطلبات والمخزون بالأدوات التشغيلية',
+                'متجر يستطيع فريقكم إدارته بإجراءات موثقة',
+            ],
+            deliverables: [
+                { t: 'واجهة المتجر وكتالوج المنتجات', d: 'صفحات منتجات ومجموعات متجاوبة وبحث وخيارات منتجات وإدارة كتالوج مناسبة لتشكيلتكم.' },
+                { t: 'إتمام الطلب والدفع', d: 'تكامل مزوّد الدفع وحالات واضحة للدفع واختبارات للعمليات الناجحة والفاشلة والمتوقفة.' },
+                { t: 'الطلبات والتنفيذ', d: 'سير عمل للطلبات وقواعد شحن وتكامل مخزون أو ERP وفق طريقة تنفيذ فريقكم للمشتريات.' },
+                { t: 'الإطلاق والقياس', d: 'تحليلات تجارة وتتبع يراعي الموافقة وتدريب المسؤولين وقائمة إطلاق مختبرة.' },
+            ],
+            process: [
+                { t: 'تخطيط المتجر', d: 'نحدد الكتالوج ومناطق البيع ومتطلبات الدفع وقواعد التنفيذ وقيود المنصة.' },
+                { t: 'تصميم الرحلة', d: 'نختبر اكتشاف المنتجات وصفحاتها والسلة والدفع على الهاتف والحاسوب.' },
+                { t: 'البناء والربط', d: 'ننفذ الواجهة ونربط الدفع والشحن والمخزون والتحليلات.' },
+                { t: 'الاختبار والإطلاق', d: 'نتحقق من رحلات الطلب كاملة والتسليم التشغيلي قبل فتح المتجر للعملاء.' },
+            ],
+            faqs: [
+                { q: 'هل نحتاج إلى متجر مخصص؟', a: 'ليس بالضرورة. المنصة الجاهزة غالباً نقطة البداية الأفضل. نوصي بالهندسة المخصصة فقط عندما تبرر المتطلبات مسؤولياتها الإضافية وصيانتها.' },
+                { q: 'هل يدعم المتجر العربية والإنجليزية؟', a: 'نعم. نحدد المحتوى ثنائي اللغة وتخطيط RTL منذ البداية، بما في ذلك اكتشاف المنتجات والدفع حيث تدعمه المنصة المختارة.' },
+                { q: 'هل يمكن ترحيل متجر قائم؟', a: 'نعم. نراجع المنتجات وبيانات العملاء وسجل الطلبات والروابط والتكاملات، ثم نتفق على خطة ترحيل وإعادة توجيه مع التحقق قبل التحويل.' },
+            ],
+            meta: {
+                title: 'تطوير المتاجر الإلكترونية ومواقع التجارة في قطر',
+                description: 'متاجر متجاوبة وكتالوجات منتجات وتكامل دفع وإدارة طلبات مترابطة للشركات في قطر، على منصات جاهزة أو بتطوير مخصص.',
+            },
+        },
+    },
+
+    'corporate-websites': {
+        id: 'website',
+        cat: 'engineering',
+        stack: ['Laravel / Svelte', 'CMS', 'HTML & CSS', 'Accessibility', 'Analytics', 'Managed Hosting'],
+        en: {
+            title: 'Corporate Websites',
+            short: 'Corporate Websites',
+            summary: 'Fast, accessible company websites with clear content, bilingual experiences, and a CMS your team can confidently manage.',
+            overview: [
+                'Your company website should make it easy to understand what you do, why your organization is credible, and how to contact the right team. We turn that into a clear content structure and a responsive website, rather than a collection of decorative pages with no useful next step.',
+                'This service delivers the public-facing website: service pages, company content, enquiries, and editing tools. It is separate from internal platforms and from brand strategy. We can work with your existing identity or coordinate with the design service when a new visual system is needed.',
+            ],
+            outcomes: [
+                'A clear presentation of your company, services, and credibility',
+                'A responsive Arabic and English experience where required',
+                'Content your team can maintain without routine developer requests',
+                'Accessible navigation and measurable enquiry journeys',
+            ],
+            deliverables: [
+                { t: 'Content Structure & Page Design', d: 'Site architecture and responsive templates for company, service, industry, and contact content.' },
+                { t: 'CMS & Editing Workflow', d: 'Content management with appropriate roles, reusable page sections, and editor training.' },
+                { t: 'Bilingual & Accessible Build', d: 'Arabic/English layouts, semantic markup, keyboard navigation, and responsive implementation.' },
+                { t: 'Enquiries & Launch Setup', d: 'Contact forms, analytics, technical search foundations, hosting setup, and a documented handover.' },
+            ],
+            process: [
+                { t: 'Structure', d: 'Review audiences, company content, and the actions visitors need to take.' },
+                { t: 'Design', d: 'Agree page templates, content hierarchy, and responsive bilingual layouts.' },
+                { t: 'Build', d: 'Implement templates, the CMS, forms, and integrations, then populate approved content.' },
+                { t: 'Launch & hand over', d: 'Check accessibility, performance, forms, and redirects, and train the team that will maintain the site.' },
+            ],
+            faqs: [
+                { q: 'Can you use our current brand identity?', a: 'Yes. We can build within your existing guidelines. A separate brand engagement is only needed when the identity itself needs work.' },
+                { q: 'Can our team edit the website?', a: 'Yes. We choose a CMS and editing workflow around your team, define permissions, and provide practical training and documentation.' },
+                { q: 'Is ongoing SEO included?', a: 'The build includes technical search foundations such as page metadata, crawlable structure, and performance work. Ongoing content strategy and SEO/GEO measurement are scoped through the dedicated search service.' },
+            ],
+            meta: {
+                title: 'Corporate & Bilingual Company Website Development in Qatar',
+                description: 'Accessible, responsive company websites with Arabic and English layouts, CMS editing, enquiry forms, and clear content for organizations in Qatar.',
+            },
+        },
+        ar: {
+            title: 'مواقع الشركات والمؤسسات',
+            short: 'مواقع الشركات',
+            summary: 'مواقع شركات سريعة وسهلة الاستخدام، بمحتوى واضح وتجربة ثنائية اللغة ونظام إدارة محتوى يستطيع فريقكم إدارته بثقة.',
+            overview: [
+                'ينبغي أن يجعل موقع الشركة فهم نشاطكم ومصداقية مؤسستكم والتواصل مع الفريق المناسب أمراً سهلاً. نحول ذلك إلى هيكل محتوى واضح وموقع متجاوب، بدلاً من صفحات زخرفية دون خطوة تالية مفيدة.',
+                'تسلم هذه الخدمة الموقع العام: صفحات الخدمات ومحتوى الشركة والاستفسارات وأدوات التحرير. وهي مختلفة عن المنصات الداخلية وعن استراتيجية الهوية. نعمل بهويتكم الحالية أو ننسق مع خدمة التصميم عند الحاجة إلى نظام بصري جديد.',
+            ],
+            outcomes: [
+                'عرض واضح للشركة والخدمات وعناصر المصداقية',
+                'تجربة متجاوبة بالعربية والإنجليزية عند الحاجة',
+                'محتوى يديره فريقكم دون طلبات تطوير متكررة',
+                'تنقل سهل الوصول ومسارات استفسار قابلة للقياس',
+            ],
+            deliverables: [
+                { t: 'هيكل المحتوى وتصميم الصفحات', d: 'معمارية موقع وقوالب متجاوبة لمحتوى الشركة والخدمات والقطاعات والتواصل.' },
+                { t: 'إدارة المحتوى وسير التحرير', d: 'نظام محتوى بصلاحيات مناسبة وأقسام قابلة لإعادة الاستخدام وتدريب للمحررين.' },
+                { t: 'بناء ثنائي اللغة وسهل الوصول', d: 'تخطيطات عربية وإنجليزية وعناصر دلالية وتنقل بلوحة المفاتيح وتنفيذ متجاوب.' },
+                { t: 'الاستفسارات وتهيئة الإطلاق', d: 'نماذج تواصل وتحليلات وأسس تقنية للبحث وإعداد استضافة وتسليم موثق.' },
+            ],
+            process: [
+                { t: 'الهيكلة', d: 'نراجع الجمهور ومحتوى الشركة والإجراءات التي يحتاج الزوار إلى اتخاذها.' },
+                { t: 'التصميم', d: 'نتفق على القوالب وتسلسل المحتوى وتخطيطات متجاوبة ثنائية اللغة.' },
+                { t: 'البناء', d: 'ننفذ القوالب ونظام المحتوى والنماذج والتكاملات ونضيف المحتوى المعتمد.' },
+                { t: 'الإطلاق والتسليم', d: 'نتحقق من سهولة الوصول والأداء والنماذج وإعادة التوجيه وندرب فريق إدارة الموقع.' },
+            ],
+            faqs: [
+                { q: 'هل يمكن استخدام هويتنا الحالية؟', a: 'نعم. يمكن البناء وفق أدلتكم الحالية. نحتاج إلى مشروع هوية منفصل فقط عندما تتطلب الهوية نفسها تطويراً.' },
+                { q: 'هل يستطيع فريقنا تحرير الموقع؟', a: 'نعم. نختار نظام محتوى وسير تحرير مناسبين لفريقكم ونحدد الصلاحيات ونقدم تدريباً وتوثيقاً عمليين.' },
+                { q: 'هل تشمل الخدمة تحسين البحث المستمر؟', a: 'يشمل البناء الأسس التقنية مثل البيانات الوصفية وهيكل قابل للفهرسة وتحسين الأداء. أما استراتيجية المحتوى والقياس المستمر لـSEO وGEO فتحدد عبر خدمة البحث المتخصصة.' },
+            ],
+            meta: {
+                title: 'تطوير مواقع الشركات والمؤسسات ثنائية اللغة في قطر',
+                description: 'مواقع شركات متجاوبة وسهلة الوصول بتخطيطات عربية وإنجليزية ونظام محتوى ونماذج استفسار ومحتوى واضح للمؤسسات في قطر.',
+            },
+        },
+    },
+
+    'seo-and-geo': {
+        id: 'seo',
+        cat: 'growth',
+        stack: ['Google Search Console', 'GA4', 'Structured Data', 'Technical Audits', 'Content Research', 'AI Search Monitoring'],
+        en: {
+            title: 'SEO & Generative Engine Optimization',
+            short: 'SEO & GEO',
+            summary: 'Clear, discoverable content for conventional search and AI-generated answers, supported by technical SEO and honest performance measurement.',
+            overview: [
+                'Search visibility starts with content that answers real questions and a site search engines can reliably crawl. We assess indexing, page structure, performance, content gaps, and how your business is represented online, then prioritize changes against the audience and enquiries you want to reach.',
+                'Generative Engine Optimization extends that work to AI-generated search answers. We improve factual clarity, entity consistency, source quality, and structured content, and monitor representative queries where practical. No provider can guarantee rankings or an AI citation; the work is measured through observable search and business outcomes.',
+            ],
+            outcomes: [
+                'A prioritized technical and content plan based on evidence',
+                'Clearer pages that answer the questions your audience actually asks',
+                'Consistent business information and structured data where appropriate',
+                'Reporting that distinguishes traffic, enquiries, and sampled AI-search visibility',
+            ],
+            deliverables: [
+                { t: 'Technical SEO Audit', d: 'Crawlability, indexing, metadata, internal links, mobile performance, and a ranked remediation plan.' },
+                { t: 'Search & Content Strategy', d: 'Audience and query research, page mapping, content briefs, and on-page improvements with a defined review process.' },
+                { t: 'GEO & Entity Clarity', d: 'Factually grounded pages, consistent business entities, useful answer structures, and appropriate schema without misleading claims.' },
+                { t: 'Measurement & Reporting', d: 'Search Console and analytics setup or review, agreed conversion measures, and clearly scoped sampling of AI-answer visibility.' },
+            ],
+            process: [
+                { t: 'Establish the baseline', d: 'Review the website, current search performance, target audience, and business goals.' },
+                { t: 'Prioritize', d: 'Separate technical blockers from content opportunities and agree the highest-value work first.' },
+                { t: 'Improve', d: 'Implement or coordinate site changes, content updates, structured data, and business-information consistency.' },
+                { t: 'Measure & iterate', d: 'Review indexing, queries, qualified enquiries, and sampled AI answers, then adapt the plan to the evidence.' },
+            ],
+            faqs: [
+                { q: 'What is GEO?', a: 'Generative Engine Optimization is the practice of making your information easier to discover, understand, and reference in AI-generated search answers. It complements SEO rather than replacing it.' },
+                { q: 'Can you guarantee first-page rankings or AI citations?', a: 'No. Search engines and AI systems control their own outputs. We agree deliverables, publish evidence-based reporting, and avoid promises that no provider can reliably fulfill.' },
+                { q: 'Does this include paid advertising?', a: 'No. This service focuses on organic search and AI-answer visibility. Paid campaigns can be scoped separately through the design and growth offering.' },
+            ],
+            meta: {
+                title: 'SEO & Generative Engine Optimization (GEO) in Qatar',
+                description: 'Technical SEO, content strategy, structured data, and generative search visibility for businesses in Qatar. Evidence-led work without ranking or citation guarantees.',
+            },
+        },
+        ar: {
+            title: 'تحسين محركات البحث والبحث التوليدي',
+            short: 'SEO وGEO',
+            summary: 'محتوى واضح وقابل للاكتشاف في البحث التقليدي وإجابات الذكاء الاصطناعي، مدعوم بتحسين تقني وقياس صادق للأداء.',
+            overview: [
+                'يبدأ الظهور بمحتوى يجيب عن أسئلة حقيقية وموقع تستطيع محركات البحث الزحف إليه بموثوقية. نقيّم الفهرسة وهيكل الصفحات والأداء وفجوات المحتوى وتمثيل نشاطكم على الإنترنت، ثم نرتب التغييرات وفق الجمهور والاستفسارات المستهدفة.',
+                'يمد تحسين محركات البحث التوليدي هذا العمل إلى الإجابات المنتجة بالذكاء الاصطناعي. نحسن وضوح الحقائق واتساق معلومات النشاط وجودة المصادر وبنية المحتوى، ونراقب أسئلة ممثلة حيث يمكن ذلك. لا يمكن ضمان ترتيب أو استشهاد من نظام ذكاء اصطناعي؛ نقيس العمل بنتائج بحث وأعمال قابلة للرصد.',
+            ],
+            outcomes: [
+                'خطة تقنية ومحتوى مرتبة الأولويات ومبنية على أدلة',
+                'صفحات أوضح تجيب عن أسئلة الجمهور الفعلية',
+                'معلومات نشاط متسقة وبيانات منظمة حيث تناسب',
+                'تقارير تميز الزيارات والاستفسارات وعينات الظهور في البحث التوليدي',
+            ],
+            deliverables: [
+                { t: 'تدقيق SEO التقني', d: 'الزحف والفهرسة والبيانات الوصفية والروابط الداخلية وأداء الهاتف وخطة معالجة مرتبة.' },
+                { t: 'استراتيجية البحث والمحتوى', d: 'بحث الجمهور والاستفسارات وخريطة صفحات وموجزات محتوى وتحسينات داخل الصفحات مع مراجعة محددة.' },
+                { t: 'GEO ووضوح معلومات النشاط', d: 'صفحات دقيقة ومعلومات نشاط متسقة وبنى إجابات مفيدة وبيانات منظمة مناسبة دون ادعاءات مضللة.' },
+                { t: 'القياس والتقارير', d: 'تهيئة أو مراجعة Search Console والتحليلات ومقاييس تحويل متفق عليها وعينات محددة لظهور الإجابات التوليدية.' },
+            ],
+            process: [
+                { t: 'تحديد خط الأساس', d: 'نراجع الموقع وأداء البحث الحالي والجمهور المستهدف وأهداف النشاط.' },
+                { t: 'ترتيب الأولويات', d: 'نفصل العوائق التقنية عن فرص المحتوى ونتفق على العمل الأعلى قيمة أولاً.' },
+                { t: 'التحسين', d: 'ننفذ أو ننسق تغييرات الموقع والمحتوى والبيانات المنظمة واتساق معلومات النشاط.' },
+                { t: 'القياس والتطوير', d: 'نراجع الفهرسة والاستفسارات والعملاء المحتملين وعينات الإجابات التوليدية ونكيف الخطة وفق الأدلة.' },
+            ],
+            faqs: [
+                { q: 'ما المقصود بـGEO؟', a: 'تحسين محركات البحث التوليدي هو جعل معلوماتكم أسهل للاكتشاف والفهم والاستشهاد في إجابات البحث المنتجة بالذكاء الاصطناعي. وهو مكمل لـSEO لا بديل عنه.' },
+                { q: 'هل تضمنون الصفحة الأولى أو استشهاد الذكاء الاصطناعي؟', a: 'لا. تتحكم محركات البحث وأنظمة الذكاء الاصطناعي في مخرجاتها. نتفق على مخرجات العمل ونقدم تقارير مبنية على الأدلة ونتجنب وعوداً لا يمكن لأي مزوّد ضمانها.' },
+                { q: 'هل تشمل الخدمة الإعلانات المدفوعة؟', a: 'لا. تركز هذه الخدمة على البحث العضوي وظهور الإجابات التوليدية. يمكن تحديد نطاق الحملات المدفوعة بشكل منفصل عبر خدمة التصميم والنمو.' },
+            ],
+            meta: {
+                title: 'تحسين محركات البحث SEO والبحث التوليدي GEO في قطر',
+                description: 'تحسين بحث تقني واستراتيجية محتوى وبيانات منظمة وظهور في البحث التوليدي للشركات في قطر، بعمل مبني على الأدلة دون ضمانات ترتيب أو استشهاد.',
+            },
+        },
+    },
+
     'product-design-brand-growth': {
         id: 'creative',
         cat: 'growth',
-        image: media.services.creative,
         stack: ['Figma', 'Design Systems', 'Webflow / Custom', 'Analytics', 'SEO Tooling', 'Meta & Google Ads'],
         en: {
             title: 'Product Design, Brand & Digital Growth',
@@ -820,7 +1047,7 @@ const catalog = {
             deliverables: [
                 { t: 'UX/UI & Product Design', d: 'User flows, interface design, and a component-based design system that engineering can implement without reinterpretation.' },
                 { t: 'Brand Identity', d: 'Logo, typography, colour, and application guidelines built to work bilingually in Arabic and English from the outset.' },
-                { t: 'Launch Systems', d: 'Marketing site, landing pages, and conversion tracking configured so the launch produces measurable data.' },
+                { t: 'Launch Strategy & Measurement', d: 'Launch messaging, campaign creative, and conversion measurement coordinated with your website or store delivery.' },
                 { t: 'Focused Digital Campaigns', d: 'Targeted search and social campaigns with defined goals, tracked conversions, and honest reporting on what performed.' },
             ],
             process: [
@@ -856,7 +1083,7 @@ const catalog = {
             deliverables: [
                 { t: 'تصميم UX/UI والمنتج', d: 'مسارات المستخدم وتصميم الواجهات ونظام تصميم قائم على المكونات يستطيع فريق الهندسة تنفيذه دون إعادة تأويل.' },
                 { t: 'الهوية التجارية', d: 'الشعار والخطوط والألوان وأدلة التطبيق، مبنية لتعمل ثنائية اللغة بالعربية والإنجليزية منذ البداية.' },
-                { t: 'أنظمة الإطلاق', d: 'موقع تسويقي وصفحات هبوط وتتبع تحويلات مُهيأ ليُنتج الإطلاق بيانات قابلة للقياس.' },
+                { t: 'استراتيجية الإطلاق والقياس', d: 'رسائل إطلاق ومحتوى حملات وقياس تحويلات بالتنسيق مع تنفيذ موقعكم أو متجركم.' },
                 { t: 'حملات رقمية مركزة', d: 'حملات بحث وتواصل اجتماعي موجهة بأهداف محددة وتحويلات متتبعة وتقارير صادقة عما حقق نتيجة فعلاً.' },
             ],
             process: [
@@ -878,7 +1105,7 @@ const catalog = {
     },
 }
 
-/** Slug order as presented in the footer, home carousel, and overview page. */
+/** Slug order as presented in the footer, home grid, and overview page. */
 export const SERVICE_SLUGS = Object.keys(catalog)
 
 /**
@@ -924,10 +1151,10 @@ export function getService(slug, locale = 'en') {
     return {
         slug,
         id: entry.id,
+        inquiryValue: entry.inquiryValue ?? entry.id,
         cat: entry.cat,
         tone: category.tone,
         color: TONE_HEX[category.tone],
-        image: entry.image,
         stack: entry.stack,
         href: serviceHref(slug, locale),
         // The section eyebrow is the category name; the card tag is its short form.
@@ -940,7 +1167,7 @@ export function getService(slug, locale = 'en') {
 }
 
 /**
- * All services in catalog order — used by the footer, home carousel, and
+ * All services in catalog order — used by the footer, home grid, and
  * overview page.
  *
  * @param {'en' | 'ar'} locale

@@ -24,6 +24,9 @@ class ServiceController extends Controller
         'data-analytics-business-intelligence',
         'applied-ai-solutions',
         'performance-optimization',
+        'ecommerce-development',
+        'corporate-websites',
+        'seo-and-geo',
         'product-design-brand-growth',
     ];
 

@@ -24,6 +24,8 @@ class Inquiry extends Model
 
     public const SERVICES = [
         'cloud',
+        'devops',
+        'observability',
         'software',
         'startup',
         'automation',
@@ -31,18 +33,26 @@ class Inquiry extends Model
         'data',
         'optimize',
         'creative',
+        'seo',
+        'ecommerce',
+        'website',
         'other',
     ];
 
     public const SERVICE_LABELS = [
         'cloud' => 'Cloud & Infrastructure',
+        'devops' => 'DevOps, Deployment & Reliability',
+        'observability' => 'Proactive Observability & Site Reliability (SRE)',
         'software' => 'Custom Software & Platforms',
         'startup' => 'MVP & Startup Engineering',
         'automation' => 'Automation & Integration',
-        'ai' => 'Applied AI & Retrieval Systems',
+        'ai' => 'AI-Powered Software & Solutions',
         'data' => 'Data & Business Intelligence',
         'optimize' => 'Maintenance & Optimization',
-        'creative' => 'Creative & Growth',
+        'creative' => 'Design & Growth',
+        'seo' => 'SEO & GEO',
+        'ecommerce' => 'E-commerce Development',
+        'website' => 'Corporate Websites',
         'other' => 'Other / Multi-discipline',
     ];
 

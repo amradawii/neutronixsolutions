@@ -3,11 +3,17 @@
     import PublicLayout from '../Layouts/PublicLayout.svelte'
     import HeroField from '../Components/HeroField.svelte'
     import { reveal } from '../lib/reveal.js'
-    import { getServices } from '../lib/services.js'
-    import { onMount } from 'svelte'
-    import { gsap } from 'gsap'
-    import { ScrollTrigger } from 'gsap/ScrollTrigger'
-    gsap.registerPlugin(ScrollTrigger)
+    import { getServiceGroups } from '../lib/services.js'
+
+    const QATAR_FLAG = '/assets/Qatar%20flag%20Lottie%20JSON%20animation.json'
+    /** Loads lottie-web on demand so it stays out of the initial Home bundle. */
+    const qatarFlag = (path) => (node) => {
+        let anim, live = true
+        import('lottie-web').then(({ default: lottie }) => {
+            if (live) anim = lottie.loadAnimation({ container: node, renderer: 'svg', loop: true, autoplay: !matchMedia('(prefers-reduced-motion: reduce)').matches, path })
+        })
+        return () => { live = false; anim?.destroy() }
+    }
 
     // ── Bilingual static content ───────────────────────────────────
     const content = {
@@ -33,7 +39,7 @@
             services: {
                 label: 'Core Capabilities',
                 title: 'Complex technology.\nClear outcomes.',
-                sub: (n) => `${n} focused services. Scroll to explore — or view all capabilities for the full picture.`,
+                sub: (n) => `${n} focused services. Choose a category to find the right capability for your next project.`,
             },
             platform: {
                 label: 'Built on',
@@ -71,7 +77,6 @@
                 eyebrow: 'قطر · السحابة والهندسة التقنية',
                 line1: 'نهندس أنظمة',
                 line2Pre: 'مصممة من أجل ', accent: 'التوسع', line2Post: '.',
-                line3: 'ومبنية لتدوم.',
                 sub: 'بنية سحابية وبرمجيات مخصصة وأتمتة وأنظمة بيانات للمؤسسات الطموحة في قطر والمنطقة.',
                 cta1: 'ناقش مشروعك معنا',
                 cta2: 'استكشف قدراتنا',
@@ -88,7 +93,7 @@
             services: {
                 label: 'قدراتنا الأساسية',
                 title: 'تقنية معقدة.\nنتائج واضحة.',
-                sub: (n) => `${n} خدمات متخصصة. مرر لاستكشافها — أو اعرض جميع الخدمات للصورة الكاملة.`,
+                sub: (n) => `${n} خدمات متخصصة. اختر فئة لتجد القدرة المناسبة لمشروعك القادم.`,
             },
             platform: {
                 label: 'مبني على',
@@ -128,8 +133,10 @@
     let isAR   = $derived(locale === 'ar')
     let c      = $derived(isAR ? content.ar : content.en)
 
-    // Carousel cards come from the shared catalog rather than a local copy.
-    let serviceCards = $derived(getServices(isAR ? 'ar' : 'en'))
+    // Grid cards come from the shared catalog rather than a local copy.
+    let activeServiceCategory = $state('engineering')
+    let serviceGroups = $derived(getServiceGroups(isAR ? 'ar' : 'en'))
+    let serviceCount = $derived(serviceGroups.reduce((count, group) => count + group.items.length, 0))
 
     // ── Hero entrance ──────────────────────────────────────────────
     /** @type {import('svelte/attachments').Attachment} */
@@ -145,84 +152,45 @@
         return () => cancelAnimationFrame(id)
     }
 
-    // ── GSAP scroll-driven services slider ────────────────────────
-    /** @type {HTMLElement|null} */
-    let sliderSection = $state(null)
-    /** @type {HTMLElement|null} */
-    let sliderViewport = $state(null)
-    /** @type {HTMLElement|null} */
-    let sliderTrack = $state(null)
-    /** @type {HTMLElement|null} */
-    let progressFill = $state(null)
+    // ── Keyboard-accessible service categories ────────────────────
+    /** @type {HTMLButtonElement[]} */
+    let categoryButtons = $state([])
+    /** @param {string} id */
+    const serviceTabId = (id) => `home-service-tab-${id}`
+    /** @param {string} id */
+    const servicePanelId = (id) => `home-service-panel-${id}`
+    /** @param {KeyboardEvent} event @param {number} index */
+    function navigateServiceTabs(event, index) {
+        // Navigation keys follow the tab layout. Other page-scrolling keys keep
+        // their native behavior; only focused tabs handle category navigation.
+        // Home and End move to the first and last category in catalog order.
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
 
-    // Pinning is only enabled where the whole section fits on screen. This must
-    // stay in sync with the matching @media block in this component's <style>,
-    // which compacts the section to exactly one viewport.
-    const PIN_QUERY = '(min-width: 768px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)'
+        // The active tab is the only tab stop; arrow navigation selects and
+        // focuses another category without adding every tab to the Tab sequence.
+        event.preventDefault()
+        const count = serviceGroups.length
 
-    // Extra scroll after the last card lands, so it stays fully visible for a
-    // beat before the section unpins.
-    const DWELL = 160
+        // Keyboard movement follows the visual direction in both locales,
+        // rather than assuming English's left-to-right ordering.
+        const forward = event.key === (isAR ? 'ArrowLeft' : 'ArrowRight')
 
-    onMount(() => {
-        const section = sliderSection
-        const viewport = sliderViewport
-        const track = sliderTrack
-        if (!section || !viewport || !track) return
+        // Wrap at either end so all categories remain reachable. Home and End
+        // are logical first/last commands even when Arabic reverses the layout.
+        // The catalog is shared with the Services overview, so indices always
+        // correspond to the same category names and ordering.
+        const next = event.key === 'Home' ? 0
+            : event.key === 'End' ? count - 1
+            : (index + (forward ? 1 : -1) + count) % count
 
-        const mm = gsap.matchMedia()
+        // Changing category replaces only the panel contents, not the page
+        // position, and keeps keyboard focus on the selected tab.
+        activeServiceCategory = serviceGroups[next].id
 
-        mm.add(PIN_QUERY, () => {
-            const styles = getComputedStyle(track)
-            const rtl = styles.direction === 'rtl'
-            // The track drops its trailing padding while pinned, so add the
-            // leading gutter back to land the last card off the viewport edge.
-            const gutter = parseFloat(styles.paddingInlineStart) || 0
-
-            // scrollWidth/clientWidth are layout metrics and stay constant while
-            // the track is translated. Measuring with getBoundingClientRect()
-            // instead would feed the current x back into the distance, shrinking
-            // it on every update so the track stalls before the last card.
-            const getDistance = () => Math.max(track.scrollWidth + gutter - viewport.clientWidth, 0)
-            if (getDistance() === 0) return
-
-            const trigger = ScrollTrigger.create({
-                trigger: section,
-                start: 'top top',
-                end: () => `+=${getDistance() + DWELL}`,
-                pin: true,
-                pinSpacing: true,
-                scrub: 1,
-                invalidateOnRefresh: true,
-                onUpdate: (self) => {
-                    const distance = getDistance()
-                    const progress = Math.min((self.progress * (distance + DWELL)) / distance, 1)
-                    gsap.set(track, { x: (rtl ? distance : -distance) * progress })
-                    if (progressFill) gsap.set(progressFill, { scaleX: progress })
-                },
-            })
-
-            // Moving focus into a card makes the browser scroll the clipped
-            // viewport horizontally, which desyncs it from the GSAP transform.
-            const pinScrollLeft = () => { viewport.scrollLeft = 0 }
-            viewport.addEventListener('scroll', pinScrollLeft)
-
-            // Webfont swap changes the section height, and therefore the pin
-            // distance, after the trigger has already measured it.
-            let live = true
-            document.fonts?.ready.then(() => { if (live) trigger.refresh() })
-
-            return () => {
-                live = false
-                viewport.removeEventListener('scroll', pinScrollLeft)
-                trigger.kill()
-                gsap.set(track, { x: 0 })
-                if (progressFill) gsap.set(progressFill, { scaleX: 0 })
-            }
-        })
-
-        return () => mm.revert()
-    })
+        // Native focus brings wrapped tabs into view when keyboard navigation
+        // moves beyond the currently visible part of the section.
+        categoryButtons[next]?.focus()
+    }
 </script>
 
 <svelte:head>
@@ -240,12 +208,11 @@
 
         <div class="wrap hero-body">
             <p class="hero-eyebrow hero-enter he-1"><span class="status-dot"></span>{c.hero.eyebrow}</p>
-            <p class="hero-brand hero-enter he-1" dir="ltr">Neutronix<span class="dot">•</span></p>
 
             <h1 class="hero-h1 hero-enter he-2">
                 {c.hero.line1}<br>
-                {c.hero.line2Pre}<em class="em">{c.hero.accent}</em>{c.hero.line2Post}<br>
-                {c.hero.line3}
+                {c.hero.line2Pre}<em class="em">{c.hero.accent}</em>{c.hero.line2Post}
+                {#if c.hero.line3}<br>{c.hero.line3}{/if}
             </h1>
 
             <p class="hero-sub hero-enter he-3">{c.hero.sub}</p>
@@ -280,50 +247,66 @@
         </div>
     </section>
 
-    <!-- ── SERVICES PREVIEW (GSAP scroll slider) ── -->
-    <section class="section-services" id="services" bind:this={sliderSection}>
-        <div class="svc-slider-wrap">
-            <header class="svc-header wrap">
+    <!-- ── SERVICES PREVIEW (category grid) ── -->
+    <section class="section-services" id="services">
+        <div class="svc-grid-wrap wrap">
+            <header class="svc-header">
                 <div class="svc-header-left">
                     <span class="label-accent">{c.services.label}</span>
                     <h2 class="sh-h2" style="white-space:pre-line">{c.services.title}</h2>
                 </div>
-                <p class="sh-p svc-header-right">{c.services.sub(serviceCards.length)}</p>
+                <p class="sh-p svc-header-right">{c.services.sub(serviceCount)}</p>
             </header>
 
-            <div class="svc-track-outer" bind:this={sliderViewport}>
-                <div class="svc-track" bind:this={sliderTrack}>
-                    {#each serviceCards as s (s.slug)}
-                        <article class="svc-card" style="--card-color:{s.color}">
-                            <!-- Image panel at top -->
-                            <div class="svc-card-img">
-                                <img src={s.image} alt="" loading="lazy" />
-                                <div class="svc-card-img-overlay" style="background:linear-gradient(160deg,{s.color}33 0%,{s.color}11 100%)"></div>
-                                <span class="svc-tag">{s.eyebrowShort}</span>
-                            </div>
-                            <!-- Text body -->
-                            <div class="svc-card-body">
-                                <h3 class="svc-title">{s.title}</h3>
-                                <p class="svc-desc">{s.summary}</p>
-                                <ul class="svc-chips">
-                                    {#each s.features.slice(0, 3) as feature (feature)}
-                                        <li>{feature}</li>
-                                    {/each}
-                                </ul>
-                                <Link href={s.href} class="svc-card-link" aria-label="{isAR ? 'اعرف المزيد عن' : 'Learn more about'} {s.title}">
-                                    {isAR ? 'استكشف' : 'Explore'}
-                                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                                </Link>
-                            </div>
-                        </article>
-                    {/each}
-                </div>
+            <div class="svc-tabs" role="tablist" aria-orientation="horizontal" aria-label={isAR ? 'فئات الخدمات' : 'Service categories'}>
+                {#each serviceGroups as group, i (group.id)}
+                    <button
+                        type="button"
+                        class="svc-tab"
+                        class:active={activeServiceCategory === group.id}
+                        style="--tab-color:{group.color}"
+                        id={serviceTabId(group.id)}
+                        role="tab"
+                        aria-selected={activeServiceCategory === group.id}
+                        aria-controls={servicePanelId(group.id)}
+                        tabindex={activeServiceCategory === group.id ? 0 : -1}
+                        bind:this={categoryButtons[i]}
+                        onclick={() => activeServiceCategory = group.id}
+                        onkeydown={(event) => navigateServiceTabs(event, i)}
+                    >
+                        <span class="svc-tab-label">{group.label}</span><span class="svc-tab-count">{group.items.length}</span>
+                    </button>
+                {/each}
             </div>
 
-            <div class="svc-footer-row wrap">
-                <div class="svc-progress-bar" aria-hidden="true">
-                    <div class="svc-progress-fill" bind:this={progressFill}></div>
+            {#each serviceGroups as group (group.id)}
+                <div
+                    class="svc-panel"
+                    id={servicePanelId(group.id)}
+                    role="tabpanel"
+                    aria-labelledby={serviceTabId(group.id)}
+                    tabindex="0"
+                    hidden={activeServiceCategory !== group.id}
+                >
+                    <div class="svc-grid">
+                        {#each group.items as s (s.slug)}
+                            <article class="svc-card" style="--card-color:{s.color}">
+                                <!-- Text body -->
+                                <div class="svc-card-body">
+                                    <h3 class="svc-title">{s.title}</h3>
+                                    <p class="svc-desc">{s.summary}</p>
+                                    <Link href={s.href} class="svc-card-link" aria-label="{isAR ? 'اعرف المزيد عن' : 'Learn more about'} {s.title}">
+                                        {isAR ? 'استكشف' : 'Explore'}
+                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2.5 7h9M8 3.5l3.5 3.5L8 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </Link>
+                                </div>
+                            </article>
+                        {/each}
+                    </div>
                 </div>
+            {/each}
+
+            <div class="svc-footer-row">
                 <Link href={isAR ? '/ar/services' : '/services'} class="btn-outline svc-all-btn">{isAR ? 'عرض كل الخدمات' : 'View All Capabilities'}</Link>
             </div>
         </div>
@@ -381,7 +364,7 @@
         <div class="wrap qatar-content">
             <div class="qatar-inner">
                 <span class="label-accent qatar-label">{isAR ? 'مقرنا في الدوحة' : 'Based in Doha'}</span>
-                <h2 class="qatar-h2">{isAR ? 'نبني المستقبل الرقمي للمنطقة.' : 'Building the region\'s digital future.'}</h2>
+                <h2 class="qatar-h2">{isAR ? 'نبني المستقبل الرقمي للمنطقة.' : 'Building the region\'s digital future.'}<span class="qatar-flag" aria-hidden="true" {@attach qatarFlag(QATAR_FLAG)}></span></h2>
                 <p class="qatar-p">{isAR ? 'من قلب الدوحة، نخدم المؤسسات والشركات الناشئة الطموحة في قطر ودول الخليج — بفهم عميق للمنطقة وقدرات هندسية عالمية المستوى.' : 'From the heart of Doha, we serve enterprises and ambitious startups across Qatar and the GCC — with deep regional understanding and world-class engineering capabilities.'}</p>
             </div>
         </div>
@@ -522,22 +505,8 @@
     letter-spacing: 0.04em;
     font-weight: 600;
 }
-.hero-brand {
-    font-family: var(--font-display);
-    font-size: clamp(2.75rem, 7vw, 5.5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 1.05;
-    color: var(--color-surface);
-    margin: 0 0 1rem;
-    direction: ltr;
-}
-.hero-brand .dot {
-    color: var(--color-ember);
-    margin-left: 0.15em;
-}
 .hero-h1 {
-    font-size: clamp(1.5rem, 3.2vw, 2.5rem);
+    font-size: clamp(1.875rem, 4.2vw, 3.25rem);
     font-weight: 700;
     color: var(--color-surface);
     letter-spacing: -0.03em;
@@ -548,7 +517,7 @@
 }
 :global([dir="rtl"]) .hero-h1 {
     font-family: var(--font-arabic);
-    font-size: clamp(1.25rem, 2.35vw, 1.875rem);
+    font-size: clamp(1.5rem, 3.2vw, 2.5rem);
     font-weight: 600;
     letter-spacing: 0;
     line-height: 1.65;
@@ -720,25 +689,17 @@
     opacity: 0.85;
 }
 
-/* ── SERVICES (GSAP scroll slider) ──────────────────────────── */
+/* ── SERVICES (category grid) ──────────────────────────────── */
 .section-services {
-    position: relative;
     background: var(--color-canvas);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    overflow: clip;
+    scroll-margin-top: calc(var(--nav-h) + 1rem);
 }
-.svc-slider-wrap {
-    padding-block: 4rem 2.5rem;
-    background: var(--color-canvas);
-    width: 100%;
-}
+.svc-grid-wrap { padding-block: 4.5rem; }
 .svc-header {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem 4rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 3rem;
 }
 @media (min-width: 900px) {
     .svc-header { grid-template-columns: 1fr 1fr; align-items: end; }
@@ -750,6 +711,7 @@
     line-height: 1.1;
     margin: 0.5rem 0 0;
 }
+.svc-header .sh-h2 { font-size: clamp(1.5rem, 2.8vw, 2.25rem); }
 :global([dir="rtl"]) .sh-h2 {
     font-family: var(--font-arabic);
     letter-spacing: 0;
@@ -757,245 +719,176 @@
 }
 .sh-p {
     color: var(--color-muted);
-    font-size: 1.0625rem;
+    font-size: 1rem;
     line-height: 1.65;
     margin: 0;
 }
 :global([dir="rtl"]) .sh-p { font-family: var(--font-arabic); }
-.svc-header-right {
-    max-width: 44ch;
-    padding-bottom: 0.25rem;
-}
+.svc-header-right { max-width: 44ch; }
 
-/* Horizontal slider track.
-   Default (unpinned) behaviour is a plain native horizontal scroller; the
-   pinned media query further down hands control over to GSAP. */
-.svc-track-outer {
-    overflow-x: auto;
-    overflow-y: hidden;
-    padding-block: 0.75rem 1.25rem;
-    scroll-snap-type: x proximity;
-}
-/* --gutter lines the first and last card up with the .wrap container above.
-   It is only ever consumed as padding, so the percentage always resolves
-   against the same containing block. */
-.svc-track {
-    --gutter: max(1.25rem, calc((100% - 1280px) / 2 + 1.25rem));
-    display: flex;
-    gap: 1.5rem;
-    padding-inline: var(--gutter);
-}
-@media (min-width: 480px) {
-    .svc-track { --gutter: max(1.5rem, calc((100% - 1280px) / 2 + 1.5rem)); }
+/* Category tabs remain fully visible in a responsive grid; mobile uses two
+   columns and two rows instead of requiring horizontal scrolling. */
+.svc-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem 1.75rem;
+    margin-bottom: 2.75rem;
 }
 @media (min-width: 1024px) {
-    .svc-track { --gutter: max(2.5rem, calc((100% - 1280px) / 2 + 2.5rem)); }
+    .svc-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.svc-tab {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+    min-height: 52px;
+    padding: 0.75rem 0.25rem;
+    border: 0;
+    border-bottom: 2px solid #CAD0DC;
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-muted);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    text-align: start;
+    cursor: pointer;
+    transition: color 180ms, border-color 180ms;
+}
+.svc-tab:hover {
+    color: var(--color-ink);
+    border-bottom-color: color-mix(in srgb, var(--tab-color) 55%, var(--color-ink));
+}
+.svc-tab.active {
+    border-bottom-color: color-mix(in srgb, var(--tab-color) 55%, var(--color-ink));
+    color: var(--color-ink);
+    font-weight: 700;
+}
+.svc-tab-label { min-width: 0; }
+.svc-tab-count {
+    flex-shrink: 0;
+    color: var(--color-muted);
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+:global([dir="rtl"]) .svc-tab { font-family: var(--font-arabic); }
+
+/* The grid uses the same wrap as the heading, keeping every column aligned
+   without translated tracks, trailing gutters, or artificial scroll space. */
+.svc-panel[hidden] { display: none; }
+.svc-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2rem;
+}
+@media (min-width: 1024px) {
+    .svc-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
-/* ── Modern light service cards with image panel ── */
+/* ── Compact light service cards ── */
 .svc-card {
-    flex: 0 0 min(340px, 78vw);
-    scroll-snap-align: start;
+    min-width: 0;
     background: var(--color-surface);
     border: 1px solid var(--color-ash);
-    border-radius: 20px;
-    padding: 0;
+    border-radius: 12px;
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    position: relative;
-    transition: box-shadow 350ms, transform 350ms, border-color 350ms;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: box-shadow 220ms, transform 220ms, border-color 220ms;
 }
 .svc-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 48px rgba(0,0,0,0.12), 0 0 0 1px color-mix(in srgb, var(--card-color, var(--color-ember)) 30%, transparent);
-    border-color: color-mix(in srgb, var(--card-color, var(--color-ember)) 35%, transparent);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 28px rgba(0,0,0,0.06);
+}
+.svc-card:hover, .svc-card:focus-within {
+    border-color: color-mix(in srgb, var(--card-color) 45%, var(--color-ash));
 }
 
-/* Image panel */
-.svc-card-img {
-    position: relative;
-    height: 148px;
-    overflow: hidden;
-    flex-shrink: 0;
+/* Visible keyboard focus replaces decorative category pills. */
+.svc-tab:focus-visible, .svc-panel:focus-visible, :global(.svc-card-link:focus-visible) {
+    outline: 2px solid var(--color-ember);
+    outline-offset: 3px;
 }
-.svc-card-img img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center;
-    transition: transform 600ms cubic-bezier(0.22,1,0.36,1);
-    display: block;
-}
-.svc-card:hover .svc-card-img img { transform: scale(1.07); }
-.svc-card-img-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-}
-/* Category pill floated over image */
-.svc-tag {
-    position: absolute;
-    bottom: 0.875rem;
-    inset-inline-start: 0.875rem;
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.5625rem;
-    font-weight: 800;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: #fff;
-    padding: 0.3rem 0.75rem;
-    border-radius: 100px;
-    background: color-mix(in srgb, var(--card-color, var(--color-ember)) 88%, #000);
-    backdrop-filter: blur(8px);
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-}
-:global([dir="rtl"]) .svc-tag { font-family: var(--font-arabic); letter-spacing: 0; }
 
 /* Text body */
 .svc-card-body {
     display: flex;
     flex-direction: column;
     flex: 1;
-    padding: 1.125rem 1.375rem 1.375rem;
+    padding: 1rem 1.25rem 0.75rem;
     gap: 0.5rem;
 }
 .svc-title {
     font-family: var(--font-display);
-    font-size: 1.075rem;
+    font-size: 1.0625rem;
     font-weight: 700;
-    letter-spacing: -0.022em;
+    letter-spacing: -0.02em;
     color: var(--color-ink);
-    line-height: 1.25;
+    line-height: 1.4;
     margin: 0;
 }
 :global([dir="rtl"]) .svc-title { font-family: var(--font-arabic); letter-spacing: 0; }
+
+/* Keep previews brief; full descriptions and deliverables live on the detail page. */
 .svc-desc {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
     color: var(--color-muted);
-    font-size: 0.8125rem;
-    line-height: 1.65;
-    flex: 1;
+    font-size: 0.875rem;
+    line-height: 1.6;
     margin: 0;
 }
 :global([dir="rtl"]) .svc-desc { font-family: var(--font-arabic); }
-.svc-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    padding-top: 0.625rem;
-    border-top: 1px solid var(--color-ash);
-}
-.svc-chips li {
-    font-size: 0.5625rem;
-    font-weight: 700;
-    color: var(--color-muted);
-    background: var(--color-canvas);
-    border: 1px solid var(--color-ash);
-    padding: 0.2rem 0.55rem;
-    border-radius: 100px;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-}
-:global([dir="rtl"]) .svc-chips li { font-family: var(--font-arabic); letter-spacing: 0; }
 :global(.svc-card-link) {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--card-color, var(--color-ember));
-    transition: gap 200ms;
-    margin-top: 0.125rem;
+    align-self: flex-start;
+    min-height: 44px;
+    margin-top: auto;
+    color: color-mix(in srgb, var(--card-color) 55%, var(--color-ink));
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: gap 180ms;
 }
 :global(.svc-card-link:hover) { gap: 0.65rem; }
-:global([dir="rtl"]) :global(.svc-card-link) { font-family: var(--font-arabic); letter-spacing: 0; }
+:global([dir="rtl"]) :global(.svc-card-link) { font-family: var(--font-arabic); }
+:global([dir="rtl"]) :global(.svc-card-link) svg { transform: rotate(180deg); }
 
-/* Scroll progress + footer row */
-.svc-footer-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
-    margin-top: 2rem;
-    flex-wrap: wrap;
-    width: 100%;
-}
-/* Only meaningful while GSAP drives the track */
-.svc-progress-bar {
-    display: none;
-    flex: 1;
-    min-width: 120px;
-    height: 2px;
-    background: var(--color-ash);
-    border-radius: 2px;
-    overflow: hidden;
-}
-.svc-progress-fill {
-    height: 100%;
-    width: 100%;
-    background: var(--color-ember);
-    border-radius: 2px;
-    transform: scaleX(0);
-    transform-origin: left center;
-}
-:global([dir="rtl"]) .svc-progress-fill { transform-origin: right center; }
+/* View-all footer row */
+.svc-footer-row { display: flex; justify-content: center; margin-top: 2rem; }
+
+/* The view-all action remains available under every category. */
 :global(.svc-all-btn) {
-    flex-shrink: 0;
-    font-size: 0.75rem !important;
-    padding: 0.6rem 1.25rem !important;
-    margin-inline: auto !important;
+    font-size: 0.8125rem !important;
+    padding: 0.75rem 1.5rem !important;
     text-align: center;
 }
 
-/* ── Pinned mode ──────────────────────────────────────────────
-   Must mirror PIN_QUERY in <script>. The section is compacted to exactly one
-   viewport (minus the fixed navbar) so GSAP can pin it without clipping the
-   heading behind the navbar or cutting off the footer row. */
-@media (min-width: 768px) and (min-height: 720px) and (prefers-reduced-motion: no-preference) {
-    .section-services {
-        height: 100vh;
-    }
-    .svc-slider-wrap {
-        padding-block: calc(var(--nav-h) + 1.5rem) 1.5rem;
-        /* Never let flex shrink the wrap below its content on short screens —
-           the generous block padding absorbs the overflow instead. */
-        flex-shrink: 0;
-    }
-    .svc-header {
-        margin-bottom: 1.75rem;
-    }
-    .svc-header .sh-h2 {
-        font-size: clamp(1.75rem, 3.2vw, 2.75rem);
-    }
-    .svc-track-outer {
-        overflow: hidden;
-        scroll-snap-type: none;
-        padding-block: 0.5rem 0.75rem;
-    }
-    /* The trailing gutter becomes part of the scroll distance in JS instead,
-       because browsers disagree on whether end padding counts in scrollWidth. */
-    .svc-track {
-        padding-inline-end: 0;
-        will-change: transform;
-    }
-    .svc-card-img {
-        height: 128px;
-    }
-    .svc-footer-row {
-        margin-top: 1.25rem;
-        justify-content: flex-end;
-    }
-    :global(.svc-all-btn) {
-        margin-inline: 0 !important;
-    }
-    .svc-progress-bar {
-        display: block;
-    }
+/* ── Narrow screens ───────────────────────────────────────────
+   Keep the content compact without imposing a viewport-height section. */
+@media (max-width: 639px) {
+    /* Shorter section spacing leaves more room for the cards and their content. */
+    .svc-grid-wrap { padding-block: 3rem; }
+    .svc-tabs { gap: 0.375rem 0.75rem; }
+    .svc-tab { min-height: 52px; padding: 0.625rem 0.25rem; }
+    .svc-grid { gap: 0.75rem; }
+    .svc-card { border-radius: 10px; }
+    .svc-card-body { padding: 0.625rem 0.625rem 0.25rem; gap: 0.375rem; }
+    .svc-title { font-size: 0.875rem; line-height: 1.4; }
+    .svc-desc { font-size: 0.75rem; line-height: 1.5; }
+    :global(.svc-card-link) { font-size: 0.75rem; }
+}
+
+/* Reduced-motion users get the same grid and tabs without hover movement. */
+@media (prefers-reduced-motion: reduce) {
+    .svc-card, .svc-tab, :global(.svc-card-link) { transition: none; }
+    .svc-card:hover { transform: none; }
 }
 
 /* ── PROOF BAND (light) ──────────────────────────────────────── */
@@ -1198,7 +1091,7 @@
     font-size: 1.1875rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--color-ember);
+    color: #2B60BA;
     margin-bottom: 0.75rem;
     line-height: 1.2;
 }
@@ -1350,10 +1243,18 @@
     align-items: center;
 }
 .qatar-inner {
-    max-width: 580px;
+    max-width: 900px;
+    margin-inline: auto;
     padding-block: 3rem;
+    text-align: center;
 }
-:global([dir="rtl"]) .qatar-inner { text-align: right; }
+.qatar-flag {
+    display: inline-block;
+    width: 1.4em;
+    height: 1.12em;
+    margin-inline-start: 0.3em;
+    vertical-align: -0.12em;
+}
 .qatar-label {
     color: #93C5FD;
     text-shadow: 0 0 20px rgba(96, 165, 250, 0.35);
@@ -1361,8 +1262,8 @@
 }
 .qatar-h2 {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 4vw, 3rem);
-    font-weight: 800;
+    font-size: clamp(2rem, 4.6vw, 3.375rem);
+    font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.18;
     color: #ffffff;
@@ -1370,7 +1271,7 @@
 }
 :global([dir="rtl"]) .qatar-h2 {
     font-family: var(--font-arabic);
-    font-size: clamp(1.6rem, 3.2vw, 2.5rem);
+    font-size: clamp(1.55rem, 3.1vw, 2.4rem);
     font-weight: 700;
     letter-spacing: 0;
     line-height: 1.55;
@@ -1379,8 +1280,10 @@
 .qatar-p {
     color: rgba(255,255,255,0.75);
     font-size: clamp(0.9375rem, 1.3vw, 1.0625rem);
+    font-weight: 500;
     line-height: 1.8;
-    max-width: 44ch;
+    max-width: 62ch;
+    margin-inline: auto;
 }
 :global([dir="rtl"]) .qatar-p {
     font-family: var(--font-arabic);

@@ -53,10 +53,9 @@
         <div class="sidebar-brand">
             <Link href="/admin" class="brand-logo" title={sidebarCollapsed ? "Neutronix Admin" : ""}>
                 {#if sidebarCollapsed}
-                    N<span class="dot">•</span>
+                    <img class="brand-mark" src="/assets/favicon/on-dark/favicon-96x96.png" alt="Neutronix" />
                 {:else}
-                    Neutronix<span class="dot">•</span>
-                    <span class="panel-tag">Admin</span>
+                    <img class="brand-img" src="/assets/logo.png" alt="Neutronix" />
                 {/if}
             </Link>
         </div>
@@ -242,16 +241,16 @@
     gap: 0.5rem;
     width: max-content;
 }
-.dot { color: var(--color-ember); }
-.panel-tag {
-    font-size: 0.625rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    background-color: var(--color-ember);
-    color: #ffffff;
-    padding: 0.2rem 0.4rem;
-    border-radius: 999px;
-    letter-spacing: 0.05em;
+.brand-img {
+    display: block;
+    height: 2.625rem;
+    width: auto;
+    filter: brightness(0) invert(1);
+}
+.brand-mark {
+    display: block;
+    width: 2.5rem;
+    height: 2.5rem;
 }
 
 .sidebar-links {

@@ -29,7 +29,6 @@
 
     const navigation = {
         en: {
-            logo: 'Neutronix',
             links: [
                 { label: 'Home',     href: '/' },
                 { label: 'Services', href: '/services' },
@@ -39,7 +38,6 @@
             cta: 'Book a Consultation',
         },
         ar: {
-            logo: 'نيوترونيكس',
             links: [
                 { label: 'الرئيسية',  href: '/ar' },
                 { label: 'الخدمات',  href: '/ar/services' },
@@ -60,7 +58,7 @@
         <div class="nav-row">
             <!-- Logo -->
             <Link href={isAR ? '/ar' : '/'} class="logo" aria-label="NeutronixSolutions home">
-                {c.logo}<span class="dot">•</span>
+                <img class="logo-img" src="/assets/logo.png" alt="Neutronix" />
             </Link>
 
             <!-- Desktop Nav Links -->
@@ -148,18 +146,17 @@
 
 /* Logo */
 :global(.logo) {
-    font-family: var(--font-display);
-    font-size: 1.125rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--color-ink);
-    white-space: nowrap;
-    transition: color 320ms ease;
     flex-shrink: 0;
     display: block;
 }
-.nav.nav-dark :global(.logo) { color: var(--color-canvas); }
-.dot { color: var(--color-ember); }
+.logo-img {
+    display: block;
+    height: 3.25rem;
+    width: auto;
+    transition: filter 320ms ease;
+}
+/* Logo PNG is navy on transparent; invert to white over the dark hero. */
+.nav.nav-dark .logo-img { filter: brightness(0) invert(1); }
 
 /* Desktop Links */
 .links {

@@ -63,7 +63,7 @@
 
     <div class="login-card border-editorial">
         <div class="login-brand">
-            Neutronix<span class="dot">•</span>
+            <img class="login-logo" src="/assets/logo.png" alt="Neutronix" />
             <span class="panel-tag">Portal</span>
         </div>
 
@@ -156,7 +156,11 @@
     gap: 0.5rem;
     margin-bottom: 2rem;
 }
-.dot { color: var(--color-ember); }
+.login-logo {
+    display: block;
+    height: 2.875rem;
+    width: auto;
+}
 .panel-tag {
     font-size: 0.625rem;
     font-weight: 700;

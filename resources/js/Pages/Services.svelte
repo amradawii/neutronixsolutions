@@ -110,7 +110,7 @@
         }),
     )
 
-    let activeCategory = $state('cloud')
+    let activeCategory = $state('engineering')
     let openFaq = $state(null)
 
     /** @type {HTMLElement[]} */

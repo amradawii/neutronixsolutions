@@ -18,6 +18,7 @@
         "@inertiajs/svelte": "^3.6.0",
         "@sveltejs/vite-plugin-svelte": "^6.2.4",
         "gsap": "^3.15.0",
+        "lottie-web": "5.13.0",
         "svelte": "^5.56.4"
     }
 }

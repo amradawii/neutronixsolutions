@@ -62,7 +62,7 @@
 
         <div class="ft-main">
             <Link href={isAR ? '/ar' : '/'} class="ft-logo">
-                {isAR ? 'نيوترونيكس' : 'Neutronix'}<span class="dot">•</span>
+                <img class="ft-logo-img" src="/assets/logo.png" alt="Neutronix" />
             </Link>
 
             <nav class="ft-row ft-company" aria-label={c.companyLabel}>
@@ -136,14 +136,16 @@
     gap: 0.5rem 1.5rem;
 }
 /* The three rows read as one band: no rules between them, just rhythm. */
-/* Ten capabilities on a single desktop line: the row gives up gap first, then
-   type size, before it is allowed to wrap. Below ~900px wrapping is correct. */
+/* Capability links wrap naturally as the catalog grows, keeping readable
+   type and spacing instead of forcing every service onto one desktop line. */
 .ft-services {
+    max-width: 72rem;
+    margin-inline: auto;
     padding-bottom: 1.125rem;
-    gap: 0.5rem clamp(0.75rem, 1.75vw, 1.5rem);
+    gap: 0.625rem 1.25rem;
 }
 :global(.ft-services .ft-link) {
-    font-size: clamp(0.6875rem, 0.92vw, 0.8125rem);
+    font-size: 0.8125rem;
 }
 
 /* Brand and copyright are pinned to the edges; the nav stays optically centered. */
@@ -165,15 +167,15 @@
 
 :global(.ft-logo) {
     flex-shrink: 0;
-    font-family: var(--font-display);
-    font-size: 1.0625rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: var(--color-surface);
-    white-space: nowrap;
+    display: block;
 }
-:global([dir="rtl"]) :global(.ft-logo) { font-family: var(--font-arabic); letter-spacing: 0; }
-.dot { color: var(--color-ember); }
+/* Logo PNG is navy on transparent; invert to white on the dark footer. */
+.ft-logo-img {
+    display: block;
+    height: 2.875rem;
+    width: auto;
+    filter: brightness(0) invert(1);
+}
 
 :global(.ft-link) {
     font-size: 0.8125rem;
