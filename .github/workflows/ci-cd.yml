@@ -1,0 +1,167 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PHP_VERSION: '8.5'
+  NODE_VERSION: '24'
+
+jobs:
+  tests:
+    name: Lint, build and test
+    runs-on: ubuntu-latest
+
+    # Throwaway MySQL that only exists for this job. RefreshDatabase rebuilds the schema
+    # inside it; the production database is never touched by tests.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: neutronix_testing
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo_mysql, intl, gd, fileinfo, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Install JS dependencies
+        run: npm ci
+
+      - name: Check code style
+        run: vendor/bin/pint --test
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Run tests
+        run: php artisan test
+
+  deploy:
+    name: Deploy to production
+    needs: tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    concurrency:
+      group: production-deploy
+      cancel-in-progress: false
+
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ vars.SSH_PORT || '22' }}
+      SSH_USER: ${{ vars.SSH_USER || 'neutronix_site' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/home/neutronix_site/htdocs/neutronix.com' }}
+      PHP_BIN: ${{ vars.PHP_BIN || 'php8.5' }}
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: mbstring, pdo_mysql, intl, gd, fileinfo, bcmath
+          coverage: none
+          tools: composer:v2
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction --no-progress
+
+      - name: Build frontend assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package release
+        run: |
+          echo "RELEASE_ID=$(date -u +%Y%m%d%H%M%S)-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          tar -czf "$RUNNER_TEMP/release.tgz" \
+            --exclude=./.git \
+            --exclude=./.github \
+            --exclude=./node_modules \
+            --exclude=./tests \
+            --exclude=./storage \
+            --exclude=./.env \
+            --exclude=./phpunit.xml \
+            --exclude=./public/hot \
+            --exclude=./public/storage \
+            .
+
+      - name: Configure SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/deploy_key ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host production
+            HostName $SSH_HOST
+            Port $SSH_PORT
+            User $SSH_USER
+            IdentityFile ~/.ssh/deploy_key
+            IdentitiesOnly yes
+            StrictHostKeyChecking yes
+          EOF
+
+      - name: Upload release
+        run: |
+          ssh production "mkdir -p '$DEPLOY_PATH/releases/$RELEASE_ID' && tar -xzf - -C '$DEPLOY_PATH/releases/$RELEASE_ID'" \
+            < "$RUNNER_TEMP/release.tgz"
+
+      - name: Migrate and activate release
+        run: |
+          ssh production "DEPLOY_PATH='$DEPLOY_PATH' PHP_BIN='$PHP_BIN' bash '$DEPLOY_PATH/releases/$RELEASE_ID/scripts/deploy.sh' '$RELEASE_ID'"
+
+      - name: Smoke test
+        if: env.PRODUCTION_URL != ''
+        run: curl -fsS --retry 5 --retry-delay 5 --retry-all-errors "$PRODUCTION_URL/up" -o /dev/null

@@ -64,7 +64,34 @@ Create the first admin account:
 php artisan db:seed --class=AdminSeeder
 ```
 
-Change that account's password after the first login.
+Change that account's password after the first login. Outside production the seeder uses `admin123`; in production it prompts for a password (12+ characters). It never resets the password of an existing `admin` account.
+
+Tests run against a dedicated MySQL database named `neutronix_testing` (enforced in `tests/TestCase.php`), never the app database.
+
+## Deployment (CI/CD)
+
+`.github/workflows/ci-cd.yml` runs on every push and pull request to `master`:
+
+1. **tests:** Pint, `npm run build`, and the PHPUnit suite on PHP 8.5 against a throwaway MySQL service.
+2. **deploy** (pushes to `master` only, after tests pass): builds production `vendor/` and `public/build`, uploads them over SSH to `releases/<id>` on the VPS, then runs `scripts/deploy.sh`, which links the shared `.env` and `storage`, runs `migrate --force`, caches config/routes/views, and atomically switches the `current` symlink. The last 5 releases are kept.
+
+Migrations only ever run forward. `migrate:fresh`, `migrate:refresh`, `migrate:reset`, and `db:wipe` are blocked when `APP_ENV=production`.
+
+Server layout (CloudPanel site root: `neutronix.com/current/public`):
+
+```
+/home/neutronix_site/htdocs/neutronix.com/
+  current -> releases/<id>
+  releases/
+  shared/.env        production environment, maintained by hand on the server
+  shared/storage/    logs and uploaded admin photos
+```
+
+Roll back by pointing `current` at an earlier release:
+
+```bash
+cd ~/htdocs/neutronix.com && ln -sfn releases/<previous-id> current
+```
 
 ## Content and assets
 

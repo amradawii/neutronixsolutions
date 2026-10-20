@@ -103,6 +103,30 @@ class ConsultationTest extends TestCase
         $this->assertDatabaseCount('inquiries', 5);
     }
 
+    public function test_rate_limit_uses_the_visitor_ip_forwarded_by_the_local_proxy(): void
+    {
+        $submitFrom = fn (string $remoteAddr, string $forwardedFor, int $attempt) => $this
+            ->withServerVariables(['REMOTE_ADDR' => $remoteAddr])
+            ->withHeader('X-Forwarded-For', $forwardedFor)
+            ->post(route('consultation.store'), [
+                ...$this->validPayload(),
+                'email' => "client{$attempt}@example.com",
+            ]);
+
+        foreach (range(1, 5) as $attempt) {
+            $submitFrom('127.0.0.1', '198.51.100.1', $attempt)->assertSessionHas('success');
+        }
+
+        $submitFrom('127.0.0.1', '198.51.100.1', 6)->assertSessionHas('error');
+        $submitFrom('127.0.0.1', '198.51.100.2', 7)->assertSessionHas('success');
+
+        foreach (range(8, 12) as $attempt) {
+            $submitFrom('203.0.113.9', "203.0.113.{$attempt}", $attempt)->assertSessionHas('success');
+        }
+
+        $submitFrom('203.0.113.9', '203.0.113.99', 13)->assertSessionHas('error');
+    }
+
     public function test_old_contact_urls_redirect_to_consultation_pages(): void
     {
         $this->get('/contact')->assertRedirect('/book-a-consultation');
