@@ -91,8 +91,8 @@ jobs:
     env:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       SSH_PORT: ${{ vars.SSH_PORT || '22' }}
-      SSH_USER: ${{ vars.SSH_USER || 'neutronix_site' }}
-      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/home/neutronix_site/htdocs/neutronix.com' }}
+      SSH_USER: ${{ vars.SSH_USER || 'neutronixs_site' }}
+      DEPLOY_PATH: ${{ vars.DEPLOY_PATH || '/home/neutronixs_site/htdocs/neutronixs.com' }}
       PHP_BIN: ${{ vars.PHP_BIN || 'php8.5' }}
       PRODUCTION_URL: ${{ vars.PRODUCTION_URL }}
 

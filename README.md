@@ -77,10 +77,10 @@ Tests run against a dedicated MySQL database named `neutronix_testing` (enforced
 
 Migrations only ever run forward. `migrate:fresh`, `migrate:refresh`, `migrate:reset`, and `db:wipe` are blocked when `APP_ENV=production`.
 
-Server layout (CloudPanel site root: `neutronix.com/current/public`):
+Server layout (CloudPanel site root: `neutronixs.com/current/public`):
 
 ```
-/home/neutronix_site/htdocs/neutronix.com/
+/home/neutronixs_site/htdocs/neutronixs.com/
   current -> releases/<id>
   releases/
   shared/.env        production environment, maintained by hand on the server
@@ -90,7 +90,7 @@ Server layout (CloudPanel site root: `neutronix.com/current/public`):
 Roll back by pointing `current` at an earlier release:
 
 ```bash
-cd ~/htdocs/neutronix.com && ln -sfn releases/<previous-id> current
+cd ~/htdocs/neutronixs.com && ln -sfn releases/<previous-id> current
 ```
 
 ## Content and assets
