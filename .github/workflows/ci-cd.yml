@@ -79,7 +79,7 @@ jobs:
   deploy:
     name: Deploy to production
     needs: tests
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: production
